@@ -1,11 +1,16 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'cloudrun-action'
+description: 'Deploy a Docker Image using Google Cloud Run'
+author: 'Rick van den Hof'
 inputs:
-  milliseconds: # change this
+  name:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Name of the service'
+  image:
+    required: true
+    description: 'Image to run on Google Cloud Run'
+outputs:
+  url:
+    description: 'The URL assigned by Google Cloud Run to the service'
 runs:
   using: 'node12'
   main: 'dist/index.js'
