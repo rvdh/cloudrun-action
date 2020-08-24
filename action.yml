@@ -1,11 +1,35 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'cloudrun-action'
+description: 'Deploy a Docker Image using Google Cloud Run'
+author: 'Rick van den Hof'
 inputs:
-  milliseconds: # change this
+  name:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Name of the service'
+  image:
+    required: true
+    description: 'Image to run on Google Cloud Run'
+  service_account_key:
+    required: true
+    description: 'JSON representation of Google Application Credentials to be used'
+  service_account_name:
+    required: false
+    description: 'Email address of the IAM service account associated with the revision of the service. The service account represents the identity of the running revision, and determines what permissions the revision has. If not provided, the revision will use the project''s default service account.'
+  vpc_connector_name:
+    required: false
+    description: 'Set a VPC connector for this Service.'
+  run_region:
+    required: true
+    description: 'Region in which the resource can be found.'
+  github_token:
+    required: false
+    description: 'Token to use to authenticate to GitHub, for adding comments to Pull Requests'
+  allow_unauthenticated:
+    required: false
+    default: false
+    description: 'Allow unauthenticated invocations. Set this to true to create a public API or website, or false to manage authorized users with Cloud IAM.'
+outputs:
+  url:
+    description: 'The URL assigned by Google Cloud Run to the service'
 runs:
   using: 'node12'
   main: 'dist/index.js'

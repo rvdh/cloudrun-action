@@ -1,19 +1,50 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as gcloud from './gcloud'
+import * as github from './github'
 
-async function run(): Promise<void> {
+async function main(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const name: string = core.getInput('name')
+    const serviceAccountKey: string = core.getInput('service_account_key')
+    const runRegion: string = core.getInput('run_region')
+    const image: string = core.getInput('image')
+    const serviceAccountName: string = core.getInput('service_account_name')
+    const vpcConnectorName: string = core.getInput('vpc_connector_name')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    core.info(`Deploying docker image ${image}...`)
 
-    core.setOutput('time', new Date().toTimeString())
+    // add github comment
+    let comment = `🤖  Cloud Run Deployment: Starting\n`
+    const comment_id = await github.addPullRequestComment(comment)
+
+    // update comment (checking for image)
+    comment += `🤖  Cloud Run Deployment: waiting for docker image ${image} to be available on Google Container Registry.\n`
+    // wait for image
+    await github.updatePullRequestComment(comment_id, comment)
+
+    if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
+      comment += `🤖  Cloud Run Deployment: Docker image not found, stopping.\n`
+      await github.updatePullRequestComment(comment_id, comment)
+      core.setFailed('Docker image not found, stopping.')
+      return
+    }
+
+    comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
+    await github.updatePullRequestComment(comment_id, comment)
+
+    const url = await gcloud.createOrUpdateCloudRunService(
+      name,
+      runRegion,
+      image,
+      serviceAccountName,
+      serviceAccountKey,
+      vpcConnectorName
+    )
+    comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
+    await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     core.setFailed(error.message)
   }
 }
 
-run()
+main()
