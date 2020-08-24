@@ -1,19 +1,40 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as gcloud from './gcloud'
+import * as github from './github'
 
-async function run(): Promise<void> {
+async function main(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const name: string = core.getInput('name')
+    const serviceAccountKey: string = core.getInput('service_account_key')
+    const runRegion: string = core.getInput('run_region')
+    const image: string = core.getInput('image')
+    const serviceAccountName: string = core.getInput('service_account_name')
+    const vpcConnectorName: string = core.getInput('vpc_connector_name')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    core.info(`Deploying docker image ${image}...`)
 
-    core.setOutput('time', new Date().toTimeString())
+    // add github comment
+    await github.addCommentToPullRequest(`🤖 Cloud Run Deployment: Starting`)
+
+    // update comment (checking for image)
+    // wait for image
+
+    await gcloud.createOrUpdateCloudRunService(
+      name,
+      runRegion,
+      image,
+      serviceAccountName,
+      serviceAccountKey,
+      vpcConnectorName
+    )
+
+    // timed out
+    // update comment
+    // gcloud run deploy
+    // update comment
   } catch (error) {
     core.setFailed(error.message)
   }
 }
 
-run()
+main()
