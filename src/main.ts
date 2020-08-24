@@ -13,9 +13,7 @@ async function run(): Promise<void> {
 
     // Obtain user credentials to use for the request
     const auth = new google.auth.GoogleAuth({
-      scopes: [
-        'https://www.googleapis.com/auth/cloud-platform',
-      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
     })
 
     const authClient = await auth.getClient()
@@ -26,26 +24,30 @@ async function run(): Promise<void> {
     const res = await run.namespaces.services.create({
       requestBody: {
         metadata: {
-          name: name,
+          name: name
         },
         spec: {
           template: {
             spec: {
               serviceAccountName: serviceAccountName,
               annotations: {
-                "run.googleapis.com/vpc-access-connector": vpcConnectorName
+                'run.googleapis.com/vpc-access-connector': vpcConnectorName
               },
 
-              containers: [{
-                image: image,
-                env: [{
-                  name: 'ENV_NAME',
-                  value: 'cloudrun',
-                }]
-              ]},
-            },
-          },
-        },
+              containers: [
+                {
+                  image: image,
+                  env: [
+                    {
+                      name: 'ENV_NAME',
+                      value: 'cloudrun'
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
       }
     })
 
@@ -58,7 +60,6 @@ async function run(): Promise<void> {
     // update comment
     // gcloud run deploy
     // update comment
-
 
     //core.setOutput('url', new Date().toTimeString())
   } catch (error) {
