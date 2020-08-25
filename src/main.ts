@@ -61,9 +61,11 @@ async function main(): Promise<void> {
         requestBody: {
           metadata: {
             name,
-            annotations: {
-              'run.googleapis.com/vpc-access-connector': vpcConnectorName
-            }
+            annotations: [
+              {
+                'run.googleapis.com/vpc-access-connector': vpcConnectorName
+              }
+            ]
           },
           spec: {
             template: {
