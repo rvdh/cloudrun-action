@@ -60,15 +60,15 @@ async function main(): Promise<void> {
         parent: `namespaces/${project}`,
         requestBody: {
           metadata: {
-            name,
-            annotations: [
-              {
-                'run.googleapis.com/vpc-access-connector': vpcConnectorName
-              }
-            ]
+            name
           },
           spec: {
             template: {
+              metadata: {
+                annotations: {
+                  'run.googleapis.com/vpc-access-connector': vpcConnectorName
+                }
+              },
               spec: {
                 serviceAccountName,
 
