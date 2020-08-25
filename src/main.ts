@@ -53,6 +53,7 @@ async function main(): Promise<void> {
     google.options({auth: authClient})
 
     const res = await run.namespaces.services.create({
+      parent: auth.getProjectId(),
       requestBody: {
         metadata: {
           name
