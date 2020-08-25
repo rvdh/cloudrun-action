@@ -55,38 +55,38 @@ async function main(): Promise<void> {
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
-    const res = await run.namespaces.services.create(
-      {
-        parent: `namespaces/${project}`,
-        requestBody: {
-          metadata: {
-            name
-          },
-          spec: {
-            template: {
-              metadata: {
-                annotations: {
-                  'run.googleapis.com/vpc-access-connector': vpcConnectorName
-                }
-              },
-              spec: {
-                serviceAccountName,
-
-                containers: [
-                  {
-                    image,
-                    env: getCloudRunEnvironmentVariables()
-                  }
-                ]
+    const request = {
+      parent: `namespaces/${project}`,
+      requestBody: {
+        metadata: {
+          name
+        },
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'run.googleapis.com/vpc-access-connector': vpcConnectorName
               }
+            },
+            spec: {
+              serviceAccountName,
+
+              containers: [
+                {
+                  image,
+                  env: getCloudRunEnvironmentVariables()
+                }
+              ]
             }
           }
         }
-      },
-      {
-        rootUrl: `https://${runRegion}-run.googleapis.com`
       }
-    )
+    }
+    core.info(String(request))
+
+    const res = await run.namespaces.services.create(request, {
+      rootUrl: `https://${runRegion}-run.googleapis.com`
+    })
 
     core.info(res)
 
