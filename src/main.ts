@@ -2,7 +2,7 @@ import * as os from 'os'
 import * as core from '@actions/core'
 import * as fs from 'fs'
 
-function setGoogleApplicationCredentials(serviceAccountKey: string): void {
+function setGoogleApplicationCredentials(serviceAccountKey: string): string {
   const uniqueFilename = require('unique-filename')
 
   const randomTmpFile = uniqueFilename(os.tmpdir())
@@ -13,7 +13,7 @@ function setGoogleApplicationCredentials(serviceAccountKey: string): void {
     }
   })
 
-  core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+  return randomTmpFile
 }
 
 function getCloudRunEnvironmentVariables(): {}[] {
@@ -38,8 +38,6 @@ async function main(): Promise<void> {
     const serviceAccountName: string = core.getInput('service_account_name')
     const serviceAccountKey: string = core.getInput('service_account_key')
     const vpcConnectorName: string = core.getInput('vpc_connector_name')
-    core.info(`service_account_key set to {serviceAccountKey}`)
-    setGoogleApplicationCredentials(serviceAccountKey)
 
     core.info(`Deploying docker image ${image}...`)
     core.info(
@@ -48,8 +46,10 @@ async function main(): Promise<void> {
     const {google} = require('googleapis')
     const run = google.run('v1')
 
+    const keyFile = setGoogleApplicationCredentials(serviceAccountKey)
     // Obtain user credentials to use for the request
     const auth = new google.auth.GoogleAuth({
+      keyFile,
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
     })
 
@@ -94,6 +94,7 @@ async function main(): Promise<void> {
 
     //core.setOutput('url', new Date().toTimeString())
   } catch (error) {
+    core.info(error.message)
     core.setFailed(error.message)
   }
 }
