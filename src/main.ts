@@ -40,9 +40,6 @@ async function main(): Promise<void> {
     const vpcConnectorName: string = core.getInput('vpc_connector_name')
 
     core.info(`Deploying docker image ${image}...`)
-    core.info(
-      `GOOGLE_APPLICATION_CREDENTIALS set to ${process.env['GOOGLE_APPLICATION_CREDENTIALS']}`
-    )
     const {google} = require('googleapis')
     const run = google.run('v1')
 
@@ -55,9 +52,10 @@ async function main(): Promise<void> {
 
     const authClient = await auth.getClient()
     google.options({auth: authClient})
+    const project = await auth.getProjectId()
 
     const res = await run.namespaces.services.create({
-      parent: auth.getProjectId(),
+      parent: project,
       requestBody: {
         metadata: {
           name
