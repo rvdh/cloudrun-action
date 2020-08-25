@@ -52,7 +52,10 @@ async function main(): Promise<void> {
     })
 
     const authClient = await auth.getClient()
-    google.options({auth: authClient})
+    google.options({
+      auth: authClient,
+      rootUrl: `https://${runRegion}-run.googleapis.com`
+    })
     const project = await auth.getProjectId()
 
     const res = await run.namespaces.services.create(
