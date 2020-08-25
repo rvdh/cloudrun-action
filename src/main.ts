@@ -38,6 +38,7 @@ async function main(): Promise<void> {
     const serviceAccountName: string = core.getInput('service_account_name')
     const serviceAccountKey: string = core.getInput('service_account_key')
     const vpcConnectorName: string = core.getInput('vpc_connector_name')
+    const runRegion: string = core.getInput('run_region')
 
     core.info(`Deploying docker image ${image}...`)
     const {google} = require('googleapis')
@@ -51,7 +52,10 @@ async function main(): Promise<void> {
     })
 
     const authClient = await auth.getClient()
-    google.options({auth: authClient})
+    google.options({
+      auth: authClient,
+      rootUrl: `${runRegion}-run.googleapis.com`
+    })
     const project = await auth.getProjectId()
 
     const res = await run.namespaces.services.create({
