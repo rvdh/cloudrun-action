@@ -54,15 +54,7 @@ async function main(): Promise<void> {
     const authClient = await auth.getClient()
     google.options({auth: authClient})
     const project = await auth.getProjectId()
-    /*metadata: {
-  annotations: {
-    'run.googleapis.com/vpc-access-connector': vpcConnectorName
-  }
-},
-              serviceAccountName,
-                  env: getCloudRunEnvironmentVariables()
 
-*/
     const request = {
       parent: `namespaces/${project}`,
       requestBody: {
@@ -72,10 +64,17 @@ async function main(): Promise<void> {
         },
         spec: {
           template: {
+            metadata: {
+              annotations: {
+                'run.googleapis.com/vpc-access-connector': vpcConnectorName
+              }
+            },
             spec: {
+              serviceAccountName,
               containers: [
                 {
-                  image
+                  image,
+                  env: getCloudRunEnvironmentVariables()
                 }
               ]
             }
@@ -83,6 +82,7 @@ async function main(): Promise<void> {
         }
       }
     }
+    core.info(JSON.stringify(request))
 
     const res = await run.namespaces.services.create(request, {
       rootUrl: `https://${runRegion}-run.googleapis.com`
