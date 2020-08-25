@@ -52,24 +52,23 @@ async function main(): Promise<void> {
     })
 
     const authClient = await auth.getClient()
-    //google.options({auth: authClient})
+    google.options({auth: authClient})
     const project = await auth.getProjectId()
 
     const res = await run.namespaces.services.create(
       {
-        auth: authClient,
         parent: `namespaces/${project}`,
         requestBody: {
           metadata: {
-            name
+            name,
+            annotations: {
+              'run.googleapis.com/vpc-access-connector': vpcConnectorName
+            }
           },
           spec: {
             template: {
               spec: {
                 serviceAccountName,
-                annotations: {
-                  'run.googleapis.com/vpc-access-connector': vpcConnectorName
-                },
 
                 containers: [
                   {
