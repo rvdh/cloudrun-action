@@ -85,7 +85,7 @@ async function main(): Promise<void> {
         }
       },
       {
-        rootUrl: `${runRegion}-run.googleapis.com`
+        rootUrl: `https://${runRegion}-run.googleapis.com`
       }
     )
 
