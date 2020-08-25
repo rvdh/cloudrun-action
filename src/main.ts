@@ -1,4 +1,35 @@
+import * as os from 'os'
 import * as core from '@actions/core'
+import * as fs from 'fs'
+
+function setGoogleApplicationCredentials(serviceAccountKey: string): void {
+  const uniqueFilename = require('unique-filename')
+
+  const randomTmpFile = uniqueFilename(os.tmpdir())
+
+  fs.writeFile(randomTmpFile, serviceAccountKey, function (err: Error | null) {
+    if (err) {
+      core.debug(String(err))
+    }
+  })
+
+  core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+}
+
+function getCloudRunEnvironmentVariables(): {}[] {
+  const environment = []
+  for (const key in process.env) {
+    if (key.startsWith('CLOUDRUN_ACTION_')) {
+      const value = process.env[key]
+      const entry = {
+        name: key.replace('CLOUDRUN_ACTION_', ''),
+        value
+      }
+      environment.push(entry)
+    }
+  }
+  return environment
+}
 
 async function main(): Promise<void> {
   try {
@@ -6,6 +37,8 @@ async function main(): Promise<void> {
     const name: string = core.getInput('name')
     const serviceAccountName: string = core.getInput('service_account_name')
     const vpcConnectorName: string = core.getInput('vpc_connector_name')
+
+    setGoogleApplicationCredentials(core.getInput('service_account_key'))
 
     core.info(`Deploying docker image ${image}...`)
     const {google} = require('googleapis')
@@ -18,8 +51,6 @@ async function main(): Promise<void> {
 
     const authClient = await auth.getClient()
     google.options({auth: authClient})
-
-    //const projectId = await google.auth.getProjectId()
 
     const res = await run.namespaces.services.create({
       requestBody: {
@@ -37,12 +68,7 @@ async function main(): Promise<void> {
               containers: [
                 {
                   image,
-                  env: [
-                    {
-                      name: 'ENV_NAME',
-                      value: 'cloudrun'
-                    }
-                  ]
+                  env: getCloudRunEnvironmentVariables()
                 }
               ]
             }
