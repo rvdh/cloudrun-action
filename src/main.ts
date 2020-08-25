@@ -59,7 +59,8 @@ async function main(): Promise<void> {
       parent: `namespaces/${project}`,
       requestBody: {
         metadata: {
-          name
+          name,
+          namespace: project
         },
         spec: {
           template: {
