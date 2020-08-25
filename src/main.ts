@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     const authClient = await auth.getClient()
     google.options({
       auth: authClient,
-      rootUrl: `https://${runRegion}-run.googleapis.com`
+      rootUrl: `${runRegion}-run.googleapis.com`
     })
     const project = await auth.getProjectId()
 
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
         }
       },
       {
-        rootUrl: `https://${runRegion}-run.googleapis.com`
+        rootUrl: `${runRegion}-run.googleapis.com`
       }
     )
 
