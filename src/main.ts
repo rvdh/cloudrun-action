@@ -1,13 +1,13 @@
 import * as core from '@actions/core'
 
-async function run(): Promise<void> {
+async function main(): Promise<void> {
   try {
     const image: string = core.getInput('image')
     const name: string = core.getInput('name')
-    const serviceAccountName: string = core.getInput('serviceAccountName')
-    const vpcConnectorName: string = core.getInput('vpcConnectorName')
-    core.debug(`Deploying docker image ${image}...`)
+    const serviceAccountName: string = core.getInput('service_account_name')
+    const vpcConnectorName: string = core.getInput('vpc_connector_name')
 
+    core.info(`Deploying docker image ${image}...`)
     const {google} = require('googleapis')
     const run = google.run('v1')
 
@@ -19,24 +19,24 @@ async function run(): Promise<void> {
     const authClient = await auth.getClient()
     google.options({auth: authClient})
 
-    const projectId = await google.auth.getProjectId()
+    //const projectId = await google.auth.getProjectId()
 
     const res = await run.namespaces.services.create({
       requestBody: {
         metadata: {
-          name: name
+          name
         },
         spec: {
           template: {
             spec: {
-              serviceAccountName: serviceAccountName,
+              serviceAccountName,
               annotations: {
                 'run.googleapis.com/vpc-access-connector': vpcConnectorName
               },
 
               containers: [
                 {
-                  image: image,
+                  image,
                   env: [
                     {
                       name: 'ENV_NAME',
@@ -51,7 +51,7 @@ async function run(): Promise<void> {
       }
     })
 
-    console.log(res.data)
+    core.info(res.data)
 
     // add github comment
     // update comment (checking for image)
@@ -67,4 +67,4 @@ async function run(): Promise<void> {
   }
 }
 
-run()
+main()
