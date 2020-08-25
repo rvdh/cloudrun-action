@@ -36,11 +36,15 @@ async function main(): Promise<void> {
     const image: string = core.getInput('image')
     const name: string = core.getInput('name')
     const serviceAccountName: string = core.getInput('service_account_name')
+    const serviceAccountKey: string = core.getInput('service_account_key')
     const vpcConnectorName: string = core.getInput('vpc_connector_name')
-
-    setGoogleApplicationCredentials(core.getInput('service_account_key'))
+    core.info(`service_account_key set to {serviceAccountKey}`)
+    setGoogleApplicationCredentials(serviceAccountKey)
 
     core.info(`Deploying docker image ${image}...`)
+    core.info(
+      `GOOGLE_APPLICATION_CREDENTIALS set to ${process.env['GOOGLE_APPLICATION_CREDENTIALS']}`
+    )
     const {google} = require('googleapis')
     const run = google.run('v1')
 
