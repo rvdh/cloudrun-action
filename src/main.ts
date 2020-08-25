@@ -86,7 +86,7 @@ async function main(): Promise<void> {
       }
     )
 
-    core.info(res.data)
+    core.info(res)
 
     // add github comment
     // update comment (checking for image)
