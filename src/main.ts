@@ -58,7 +58,7 @@ async function main(): Promise<void> {
     const res = await run.namespaces.services.create(
       {
         auth: authClient,
-        parent: project,
+        parent: `namespaces/${project}`,
         requestBody: {
           metadata: {
             name
