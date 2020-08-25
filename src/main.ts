@@ -58,6 +58,8 @@ async function main(): Promise<void> {
     const request = {
       parent: `namespaces/${project}`,
       requestBody: {
+        apiVersion: 'serving.knative.dev/v1',
+        kind: 'Service',
         metadata: {
           name,
           namespace: project
