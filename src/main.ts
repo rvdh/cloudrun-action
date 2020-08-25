@@ -82,7 +82,7 @@ async function main(): Promise<void> {
         }
       }
     }
-    core.info(JSON.stringify(request))
+    core.info(JSON.stringify(request, null, 4))
 
     const res = await run.namespaces.services.create(request, {
       rootUrl: `https://${runRegion}-run.googleapis.com`
