@@ -3,15 +3,22 @@ import * as core from '@actions/core'
 import * as fs from 'fs'
 
 function setGoogleApplicationCredentials(serviceAccountKey: string): string {
-  const uniqueFilename = require('unique-filename')
+  // See if we already saved it to a file
+  let randomTmpFile = core.getState('randomTmpFile')
+  if (!randomTmpFile) {
+    const uniqueFilename = require('unique-filename')
 
-  const randomTmpFile = uniqueFilename(os.tmpdir())
+    randomTmpFile = uniqueFilename(os.tmpdir())
 
-  fs.writeFile(randomTmpFile, serviceAccountKey, function (err: Error | null) {
-    if (err) {
-      core.debug(String(err))
-    }
-  })
+    fs.writeFile(randomTmpFile, serviceAccountKey, function (
+      err: Error | null
+    ) {
+      if (err) {
+        core.debug(String(err))
+      }
+    })
+    core.saveState('randomTmpFile', randomTmpFile)
+  }
 
   return randomTmpFile
 }
@@ -69,6 +76,52 @@ function cloudRunCreateService(
 async function delay(ms: number): Promise<void> {
   core.debug(`Sleeping for ${ms}ms`)
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export async function waitForDockerImage(
+  image: string,
+  serviceAccountKey: string
+): Promise<boolean> {
+  const keyFile = setGoogleApplicationCredentials(serviceAccountKey)
+  // Obtain user credentials to use for the request
+  const {google} = require('googleapis')
+  const auth = new google.auth.GoogleAuth({
+    keyFile,
+    scopes: ['https://www.googleapis.com/auth/cloud-platform']
+  })
+
+  const authClient = await auth.getClient()
+  google.options({auth: authClient})
+  const project = await auth.getProjectId()
+
+  const token = auth.getToken()
+  const axios = require('astios').default
+  const imageUrl = new URL(image)
+  const imageName = imageUrl.pathname.substring(
+    imageUrl.pathname.lastIndexOf('/'),
+    imageUrl.pathname.lastIndexOf(':')
+  )
+  const imageTag = imageUrl.pathname.substring(
+    imageUrl.pathname.lastIndexOf(':')
+  )
+
+  let attempt = 0
+  while (attempt < 100) {
+    attempt++
+    core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
+    core.debug(
+      `Requesting https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
+    )
+    const res = await axios.head(
+      `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
+      {headers: {Authorization: `Bearer ${token}`}}
+    )
+    core.debug(JSON.stringify(res, null, 4))
+    if (res) return true
+
+    await delay(500)
+  }
+  return false
 }
 
 export async function createOrUpdateCloudRunService(

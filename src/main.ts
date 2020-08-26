@@ -14,10 +14,18 @@ async function main(): Promise<void> {
     core.info(`Deploying docker image ${image}...`)
 
     // add github comment
-    await github.addCommentToPullRequest(`🤖 Cloud Run Deployment: Starting`)
+    let comment = `🤖  Cloud Run Deployment: Starting`
+    const comment_id = await github.addPullRequestComment(comment)
 
     // update comment (checking for image)
+    comment += `🤖  Cloud Run Deployment: waiting for docker image ${image} to be available on Google Container Registry.`
     // wait for image
+    await github.updatePullRequestComment(comment_id, comment)
+
+    await gcloud.waitForDockerImage(image, serviceAccountKey)
+
+    comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.`
+    await github.updatePullRequestComment(comment_id, comment)
 
     await gcloud.createOrUpdateCloudRunService(
       name,
