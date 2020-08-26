@@ -89,12 +89,15 @@ async function main(): Promise<void> {
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
+    core.info(`Checking if service ${name} exists..`)
     const existsRes = await run.namespaces.services.get({
       name: `namespaces/${project}/services/${name}`
     })
     if (existsRes) {
       const requestBody = cloudRunCreateService(name, project, image)
-
+      core.info(
+        `Service ${name} already exists, replacing service (body: ${requestBody})`
+      )
       await run.namespaces.services.replaceService({
         name: `namespaces/${project}/services/${name}`,
         requestBody,
@@ -104,6 +107,9 @@ async function main(): Promise<void> {
       })
     } else {
       const requestBody = cloudRunCreateService(name, project, image)
+      core.info(
+        `Service ${name} does not exist, creating service (body: ${requestBody})`
+      )
 
       await run.namespaces.services.create({
         parent: `namespaces/${project}`,
