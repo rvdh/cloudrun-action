@@ -92,34 +92,43 @@ async function main(): Promise<void> {
     core.info(
       `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
     )
-    const existsRes = await run.namespaces.services.get({
-      name: `namespaces/${project}/services/${name}`
-    })
+    const existsRes = await run.namespaces.services.get(
+      {
+        name: `namespaces/${project}/services/${name}`
+      },
+      {
+        rootUrl: `https://${runRegion}-run.googleapis.com`
+      }
+    )
     if (existsRes) {
       const requestBody = cloudRunCreateService(name, project, image)
       core.info(
         `Service ${name} already exists, replacing service (body: ${requestBody})`
       )
-      await run.namespaces.services.replaceService({
-        name: `namespaces/${project}/services/${name}`,
-        requestBody,
-        options: {
+      await run.namespaces.services.replaceService(
+        {
+          name: `namespaces/${project}/services/${name}`,
+          requestBody
+        },
+        {
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
-      })
+      )
     } else {
       const requestBody = cloudRunCreateService(name, project, image)
       core.info(
         `Service ${name} does not exist, creating service (body: ${requestBody})`
       )
 
-      await run.namespaces.services.create({
-        parent: `namespaces/${project}`,
-        requestBody,
-        options: {
+      await run.namespaces.services.create(
+        {
+          parent: `namespaces/${project}`,
+          requestBody
+        },
+        {
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
-      })
+      )
     }
     // add github comment
     // update comment (checking for image)
