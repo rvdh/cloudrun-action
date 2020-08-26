@@ -31,14 +31,48 @@ function getCloudRunEnvironmentVariables(): {}[] {
   return environment
 }
 
+function cloudRunCreateService(
+  name: string,
+  project: string,
+  image: string
+): {} {
+  const serviceAccountName: string = core.getInput('service_account_name')
+  const vpcConnectorName: string = core.getInput('vpc_connector_name')
+
+  return {
+    apiVersion: 'serving.knative.dev/v1',
+    kind: 'Service',
+    metadata: {
+      name,
+      namespace: project
+    },
+    spec: {
+      template: {
+        metadata: {
+          annotations: {
+            'run.googleapis.com/vpc-access-connector': vpcConnectorName
+          }
+        },
+        spec: {
+          serviceAccountName,
+          containers: [
+            {
+              image,
+              env: getCloudRunEnvironmentVariables()
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
 async function main(): Promise<void> {
   try {
-    const image: string = core.getInput('image')
     const name: string = core.getInput('name')
-    const serviceAccountName: string = core.getInput('service_account_name')
     const serviceAccountKey: string = core.getInput('service_account_key')
-    const vpcConnectorName: string = core.getInput('vpc_connector_name')
     const runRegion: string = core.getInput('run_region')
+    const image: string = core.getInput('image')
 
     core.info(`Deploying docker image ${image}...`)
     const {google} = require('googleapis')
@@ -55,43 +89,30 @@ async function main(): Promise<void> {
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
-    const request = {
-      parent: `namespaces/${project}`,
-      requestBody: {
-        apiVersion: 'serving.knative.dev/v1',
-        kind: 'Service',
-        metadata: {
-          name,
-          namespace: project
-        },
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'run.googleapis.com/vpc-access-connector': vpcConnectorName
-              }
-            },
-            spec: {
-              serviceAccountName,
-              containers: [
-                {
-                  image,
-                  env: getCloudRunEnvironmentVariables()
-                }
-              ]
-            }
-          }
-        }
-      }
-    }
-    core.info(JSON.stringify(request, null, 4))
-
-    const res = await run.namespaces.services.create(request, {
-      rootUrl: `https://${runRegion}-run.googleapis.com`
+    const existsRes = await run.namespaces.services.get({
+      name: `namespaces/${project}/services/${name}`
     })
+    if (existsRes) {
+      const requestBody = cloudRunCreateService(name, project, image)
 
-    core.info(res)
+      await run.namespaces.services.replaceService({
+        name: `namespaces/${project}/services/${name}`,
+        requestBody,
+        options: {
+          rootUrl: `https://${runRegion}-run.googleapis.com`
+        }
+      })
+    } else {
+      const requestBody = cloudRunCreateService(name, project, image)
 
+      await run.namespaces.services.create({
+        parent: `namespaces/${project}`,
+        requestBody,
+        options: {
+          rootUrl: `https://${runRegion}-run.googleapis.com`
+        }
+      })
+    }
     // add github comment
     // update comment (checking for image)
     // wait for image
@@ -102,7 +123,6 @@ async function main(): Promise<void> {
 
     //core.setOutput('url', new Date().toTimeString())
   } catch (error) {
-    core.info(error.message)
     core.setFailed(error.message)
   }
 }
