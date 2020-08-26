@@ -95,7 +95,8 @@ export async function waitForDockerImage(
   const project = await auth.getProjectId()
 
   const token = await authClient.getToken()
-  const axios = require('astios').default
+  const axios = require('axios').default
+
   const imageUrl = new URL(image)
   const imageName = imageUrl.pathname.substring(
     imageUrl.pathname.lastIndexOf('/'),
