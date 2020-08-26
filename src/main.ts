@@ -89,7 +89,9 @@ async function main(): Promise<void> {
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
-    core.info(`Checking if service ${name} exists..`)
+    core.info(
+      `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
+    )
     const existsRes = await run.namespaces.services.get({
       name: `namespaces/${project}/services/${name}`
     })
