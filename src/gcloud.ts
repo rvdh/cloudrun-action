@@ -118,7 +118,7 @@ export async function waitForDockerImage(
       core.debug(JSON.stringify(res, null, 4))
       return true
     } catch (error) {
-      core.debug(error.response.data)
+      core.debug(error.request)
       core.debug(error.response.status)
       core.debug(error.response.headers)
     }
