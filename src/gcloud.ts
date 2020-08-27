@@ -103,7 +103,7 @@ export async function waitForDockerImage(
   )
   const url = `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
   let attempt = 0
-  while (attempt < 100) {
+  while (attempt < 10) {
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(`Requesting ${url}`)
@@ -119,6 +119,7 @@ export async function waitForDockerImage(
       return true
     } catch (error) {
       core.debug('Error thrown')
+      core.debug(error)
       core.debug(error.message)
     }
 
