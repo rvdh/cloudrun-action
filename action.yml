@@ -23,6 +23,10 @@ inputs:
   github_token:
     required: false
     description: 'Token to use to authenticate to GitHub, for adding comments to Pull Requests'
+  allow_unauthenticated:
+    required: false
+    default: false
+    description: 'Allow unauthenticated invocations. Set this to true to create a public API or website, or false to manage authorized users with Cloud IAM.'
 outputs:
   url:
     description: 'The URL assigned by Google Cloud Run to the service'

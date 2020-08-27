@@ -222,6 +222,23 @@ export async function createOrUpdateCloudRunService(
       core.setOutput('url', res.data.status.url)
       return res.data.status.url
     }
+
+    // Set IAM policy to allow unauthenticated access
+    if (core.getInput('allow_unauthenticated')) {
+      await run.projects.locations.services.setIamPolicy({
+        resource: `projects/${project}/locations/${runRegion}/services/${name}`,
+        requestBody: {
+          policy: {
+            bindings: [
+              {
+                members: ['allUsers'],
+                role: 'roles/run.invoker'
+              }
+            ]
+          }
+        }
+      })
+    }
   } catch (error) {
     core.setFailed(error.message)
   }
