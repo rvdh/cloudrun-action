@@ -109,7 +109,7 @@ export async function waitForDockerImage(
     core.debug(`Requesting ${url}`)
     const res = await auth.request({
       url: `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
-      method: 'GET'
+      method: 'HEAD'
     })
     core.info(`res = ${res}`)
     core.debug(JSON.stringify(res, null, 4))
