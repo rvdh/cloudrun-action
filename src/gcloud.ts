@@ -111,7 +111,8 @@ export async function waitForDockerImage(
     try {
       const res = await auth.request({
         url,
-        method: 'HEAD'
+        method: 'HEAD',
+        headers: {Accept: '*/*'}
       })
       core.debug(`res = ${res}`)
       core.debug(`res.data = ${res.data}`)
