@@ -122,6 +122,64 @@ export async function waitForDockerImage(
   return false
 }
 
+function setCloudRunServiceIAMPolicy(
+  name: string,
+  project: string,
+  runRegion: string
+): void {
+  const {google} = require('googleapis')
+  const run = google.run('v1')
+
+  // Set IAM policy to allow unauthenticated access
+  if (core.getInput('allow_unauthenticated')) {
+    run.projects.locations.services.setIamPolicy({
+      resource: `projects/${project}/locations/${runRegion}/services/${name}`,
+      requestBody: {
+        policy: {
+          bindings: [
+            {
+              members: ['allUsers'],
+              role: 'roles/run.invoker'
+            }
+          ]
+        }
+      }
+    })
+  }
+}
+
+function getCloudRunServiceURL(
+  name: string,
+  project: string,
+  runRegion: string
+): string {
+  const {google} = require('googleapis')
+  const run = google.run('v1')
+
+  // Wait until we get a url
+  let attempt = 0
+  while (attempt < 100) {
+    attempt++
+    core.debug(`Waiting for service to become ready, attempt ${attempt}...`)
+    delay(500)
+    const res = run.namespaces.services.get(
+      {
+        name: `namespaces/${project}/services/${name}`
+      },
+      {
+        rootUrl: `https://${runRegion}-run.googleapis.com`
+      }
+    )
+    if (res.data.status.url) {
+      core.setOutput('url', res.data.status.url)
+      return res.data.status.url
+    }
+  }
+  throw new Error(
+    'Unable to retrieve service URL! Check the Cloud Run deployment for errors.'
+  )
+}
+
 export async function createOrUpdateCloudRunService(
   name: string,
   runRegion: string,
@@ -165,7 +223,7 @@ export async function createOrUpdateCloudRunService(
           vpcConnectorName
         )
         core.debug(`Updating service ${name}.`)
-        const res = await run.namespaces.services.replaceService(
+        await run.namespaces.services.replaceService(
           {
             name: `namespaces/${project}/services/${name}`,
             requestBody
@@ -175,9 +233,9 @@ export async function createOrUpdateCloudRunService(
           }
         )
         core.debug(`Service ${name} updated`)
-        core.setOutput('url', res.data.status.url)
-        return res.data.status.url
       }
+      setCloudRunServiceIAMPolicy(name, project, runRegion)
+      return getCloudRunServiceURL(name, project, runRegion)
     } catch (error) {
       const requestBody = cloudRunCreateService(
         name,
@@ -188,7 +246,7 @@ export async function createOrUpdateCloudRunService(
       )
       core.debug(`Creating service ${name}`)
 
-      let res = await run.namespaces.services.create(
+      await run.namespaces.services.create(
         {
           parent: `namespaces/${project}`,
           requestBody
@@ -199,48 +257,12 @@ export async function createOrUpdateCloudRunService(
       )
       core.debug(`Service ${name} created`)
 
-      // Wait until we get a url
-      let attempt = 0
-      while (!res.data.status.url && attempt < 100) {
-        attempt++
-        core.debug(`Waiting for service to become ready, attempt ${attempt}...`)
-        await delay(500)
-        res = await run.namespaces.services.get(
-          {
-            name: `namespaces/${project}/services/${name}`
-          },
-          {
-            rootUrl: `https://${runRegion}-run.googleapis.com`
-          }
-        )
-      }
-      if (!res.data.status.url) {
-        core.info(
-          'Unable to retrieve service URL! Check the Cloud Run deployment for errors.'
-        )
-      }
-      core.setOutput('url', res.data.status.url)
-      return res.data.status.url
-    }
+      setCloudRunServiceIAMPolicy(name, project, runRegion)
 
-    // Set IAM policy to allow unauthenticated access
-    if (core.getInput('allow_unauthenticated')) {
-      await run.projects.locations.services.setIamPolicy({
-        resource: `projects/${project}/locations/${runRegion}/services/${name}`,
-        requestBody: {
-          policy: {
-            bindings: [
-              {
-                members: ['allUsers'],
-                role: 'roles/run.invoker'
-              }
-            ]
-          }
-        }
-      })
+      return getCloudRunServiceURL(name, project, runRegion)
     }
   } catch (error) {
     core.setFailed(error.message)
+    throw error
   }
-  return ''
 }
