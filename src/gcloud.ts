@@ -4,21 +4,16 @@ import * as fs from 'fs'
 
 function setGoogleApplicationCredentials(serviceAccountKey: string): void {
   // See if we already saved it to a file
-  let randomTmpFile = core.getState('randomTmpFile')
-  if (!randomTmpFile) {
-    const uniqueFilename = require('unique-filename')
+  const uniqueFilename = require('unique-filename')
 
-    randomTmpFile = uniqueFilename(os.tmpdir())
+  const randomTmpFile = uniqueFilename(os.tmpdir())
 
-    fs.writeFile(randomTmpFile, serviceAccountKey, function (
-      err: Error | null
-    ) {
-      if (err) {
-        core.debug(String(err))
-      }
-    })
-    core.saveState('randomTmpFile', randomTmpFile)
-  }
+  fs.writeFile(randomTmpFile, serviceAccountKey, function (err: Error | null) {
+    if (err) {
+      core.debug(String(err))
+    }
+  })
+
   core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
 }
 
