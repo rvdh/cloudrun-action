@@ -91,7 +91,7 @@ export async function waitForDockerImage(
   //const token = await authClient.getToken()
   //const axios = require('axios').default
 
-  const imageUrl = new URL(image)
+  const imageUrl = new URL(`https://${image}`)
   const imageName = imageUrl.pathname.substring(
     imageUrl.pathname.lastIndexOf('/'),
     imageUrl.pathname.lastIndexOf(':')
