@@ -107,7 +107,7 @@ export async function waitForDockerImage(
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(`Requesting ${url}`)
-    const res = await auth.request({url, method: 'HEAD'})
+    const res = await auth.request({url})
     core.info(`res = ${res}`)
     core.debug(JSON.stringify(res, null, 4))
     if (res) return true
