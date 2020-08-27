@@ -237,6 +237,7 @@ export async function createOrUpdateCloudRunService(
       setCloudRunServiceIAMPolicy(name, project, runRegion)
       return getCloudRunServiceURL(name, project, runRegion)
     } catch (error) {
+      core.debug(JSON.stringify(error, null, 4))
       const requestBody = cloudRunCreateService(
         name,
         project,
