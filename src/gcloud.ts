@@ -95,7 +95,7 @@ export async function waitForDockerImage(
   const project = await auth.getProjectId()
 
   const token = await authClient.getToken()
-  const axios = require('axios').default
+  //const axios = require('axios').default
 
   const imageUrl = new URL(`https://${image}`)
   const imageName = imageUrl.pathname.substring(
@@ -113,13 +113,14 @@ export async function waitForDockerImage(
     core.debug(
       `Requesting https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}, token is ${token}`
     )
+    /*
     const res = await axios.head(
       `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
       {headers: {Authorization: `Bearer ${token}`}}
     )
     core.debug(JSON.stringify(res, null, 4))
     if (res) return true
-
+*/
     await delay(500)
   }
   return false
