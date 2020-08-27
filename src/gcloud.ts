@@ -113,11 +113,13 @@ export async function waitForDockerImage(
         url: `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
         method: 'HEAD'
       })
-      core.info(`res = ${res}`)
+      core.debug(`res = ${res}`)
+      core.debug(`res.data = ${res.data}`)
       core.debug(JSON.stringify(res, null, 4))
       return true
     } catch (error) {
-      core.info(error.message)
+      core.debug('Error thrown')
+      core.debug(error.message)
     }
 
     await delay(500)
