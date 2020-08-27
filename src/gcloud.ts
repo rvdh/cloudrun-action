@@ -94,8 +94,8 @@ export async function waitForDockerImage(
   google.options({auth: authClient})
   const project = await auth.getProjectId()
 
-  //const token = await authClient.getToken()
-  //const axios = require('axios').default
+  const token = await authClient.getToken()
+  const axios = require('axios').default
 
   const imageUrl = new URL(`https://${image}`)
   const imageName = imageUrl.pathname.substring(
@@ -112,14 +112,14 @@ export async function waitForDockerImage(
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(
       `Requesting https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
-    ) /*
+    )
     const res = await axios.head(
       `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
       {headers: {Authorization: `Bearer ${token}`}}
     )
     core.debug(JSON.stringify(res, null, 4))
     if (res) return true
-*/
+
     await delay(500)
   }
   return false
