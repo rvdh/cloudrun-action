@@ -23,10 +23,12 @@ async function main(): Promise<void> {
     await github.updatePullRequestComment(comment_id, comment)
 
     if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
+      core.info('Image not found')
       comment += `🤖  Cloud Run Deployment: Docker image not found, stopping.\n`
       await github.updatePullRequestComment(comment_id, comment)
       return
     }
+    core.info('Image found')
 
     comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
     await github.updatePullRequestComment(comment_id, comment)
