@@ -4,15 +4,21 @@ import * as fs from 'fs'
 
 function setGoogleApplicationCredentials(serviceAccountKey: string): string {
   // See if we already saved it to a file
-  const uniqueFilename = require('unique-filename')
+  let randomTmpFile = core.getState('randomTmpFile')
+  if (!randomTmpFile) {
+    const uniqueFilename = require('unique-filename')
 
-  const randomTmpFile = uniqueFilename(os.tmpdir())
+    randomTmpFile = uniqueFilename(os.tmpdir())
 
-  fs.writeFile(randomTmpFile, serviceAccountKey, function (err: Error | null) {
-    if (err) {
-      core.debug(String(err))
-    }
-  })
+    fs.writeFile(randomTmpFile, serviceAccountKey, function (
+      err: Error | null
+    ) {
+      if (err) {
+        core.debug(String(err))
+      }
+    })
+    core.saveState('randomTmpFile', randomTmpFile)
+  }
 
   return randomTmpFile
 }
@@ -93,11 +99,11 @@ export async function waitForDockerImage(
 
   const imageUrl = new URL(`https://${image}`)
   const imageName = imageUrl.pathname.substring(
-    imageUrl.pathname.lastIndexOf('/'),
+    imageUrl.pathname.lastIndexOf('/') + 1,
     imageUrl.pathname.lastIndexOf(':')
   )
   const imageTag = imageUrl.pathname.substring(
-    imageUrl.pathname.lastIndexOf(':')
+    imageUrl.pathname.lastIndexOf(':') + 1
   )
 
   let attempt = 0
