@@ -103,25 +103,23 @@ export async function waitForDockerImage(
   )
   const url = `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
   let attempt = 0
-  while (attempt < 10) {
+  while (attempt < 100) {
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(`Requesting ${url}`)
 
     try {
-      const res = await auth.request({
+      await auth.request({
         url,
         method: 'HEAD',
         headers: {Accept: '*/*'}
       })
-      core.debug(`res = ${res}`)
-      core.debug(`res.data = ${res.data}`)
-      core.debug(JSON.stringify(res, null, 4))
       return true
     } catch (error) {
-      core.debug(JSON.stringify(error, null, 4))
-      core.debug(error.response.status)
-      core.debug(error.response.headers)
+      if (error.response.status !== 404) {
+        core.debug(`Unexpected error occurred`)
+        throw error
+      }
     }
 
     await delay(500)
