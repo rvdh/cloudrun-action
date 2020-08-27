@@ -1,4 +1,26 @@
+import * as os from 'os'
 import * as core from '@actions/core'
+import * as fs from 'fs'
+
+function setGoogleApplicationCredentials(serviceAccountKey: string): void {
+  // See if we already saved it to a file
+  let randomTmpFile = core.getState('randomTmpFile')
+  if (!randomTmpFile) {
+    const uniqueFilename = require('unique-filename')
+
+    randomTmpFile = uniqueFilename(os.tmpdir())
+
+    fs.writeFile(randomTmpFile, serviceAccountKey, function (
+      err: Error | null
+    ) {
+      if (err) {
+        core.debug(String(err))
+      }
+    })
+    core.saveState('randomTmpFile', randomTmpFile)
+  }
+  core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+}
 
 function getCloudRunEnvironmentVariables(): {}[] {
   const environment = []
@@ -60,9 +82,12 @@ export async function waitForDockerImage(
   serviceAccountKey: string
 ): Promise<boolean> {
   // Obtain user credentials to use for the request
+  setGoogleApplicationCredentials(serviceAccountKey)
+
   const {google} = require('googleapis')
-  const auth = new google.auth.fromJSON(JSON.parse(serviceAccountKey))
-  auth.scopes = ['https://www.googleapis.com/auth/cloud-platform']
+  const auth = new google.auth.GoogleAuth({
+    scopes: ['https://www.googleapis.com/auth/cloud-platform']
+  })
 
   const authClient = await auth.getClient()
   google.options({auth: authClient})
@@ -103,8 +128,11 @@ export async function createOrUpdateCloudRunService(
     const {google} = require('googleapis')
     const run = google.run('v1')
 
-    const auth = new google.auth.fromJSON(JSON.parse(serviceAccountKey))
-    auth.scopes = ['https://www.googleapis.com/auth/cloud-platform']
+    setGoogleApplicationCredentials(serviceAccountKey)
+    // Obtain user credentials to use for the request
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    })
 
     const authClient = await auth.getClient()
     google.options({auth: authClient})
