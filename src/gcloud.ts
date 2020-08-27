@@ -111,7 +111,7 @@ export async function waitForDockerImage(
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(
-      `Requesting https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
+      `Requesting https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}, token is ${token}`
     )
     const res = await axios.head(
       `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
