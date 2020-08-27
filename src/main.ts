@@ -41,6 +41,7 @@ async function main(): Promise<void> {
       vpcConnectorName
     )
     comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
+    await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     core.setFailed(error.message)
   }
