@@ -117,7 +117,7 @@ export async function waitForDockerImage(
       }
     }
 
-    await delay(500)
+    await delay(5000)
   }
   return false
 }

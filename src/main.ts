@@ -23,17 +23,16 @@ async function main(): Promise<void> {
     await github.updatePullRequestComment(comment_id, comment)
 
     if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
-      core.info('Image not found')
       comment += `🤖  Cloud Run Deployment: Docker image not found, stopping.\n`
       await github.updatePullRequestComment(comment_id, comment)
+      core.setFailed('Docker image not found, stopping.')
       return
     }
-    core.info('Image found')
 
     comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
     await github.updatePullRequestComment(comment_id, comment)
 
-    await gcloud.createOrUpdateCloudRunService(
+    const url = await gcloud.createOrUpdateCloudRunService(
       name,
       runRegion,
       image,
@@ -41,11 +40,7 @@ async function main(): Promise<void> {
       serviceAccountKey,
       vpcConnectorName
     )
-
-    // timed out
-    // update comment
-    // gcloud run deploy
-    // update comment
+    comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
   } catch (error) {
     core.setFailed(error.message)
   }
