@@ -107,13 +107,18 @@ export async function waitForDockerImage(
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(`Requesting ${url}`)
-    const res = await auth.request({
-      url: `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
-      method: 'HEAD'
-    })
-    core.info(`res = ${res}`)
-    core.debug(JSON.stringify(res, null, 4))
-    if (res) return true
+
+    try {
+      const res = await auth.request({
+        url: `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`,
+        method: 'HEAD'
+      })
+      core.info(`res = ${res}`)
+      core.debug(JSON.stringify(res, null, 4))
+      return true
+    } catch (error) {
+      core.info(error.message)
+    }
 
     await delay(500)
   }
