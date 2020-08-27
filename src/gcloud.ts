@@ -94,7 +94,7 @@ export async function waitForDockerImage(
   google.options({auth: authClient})
   const project = await auth.getProjectId()
 
-  const token = await auth.getToken()
+  const token = await authClient.getToken()
   //const axios = require('axios').default
 
   const imageUrl = new URL(`https://${image}`)
