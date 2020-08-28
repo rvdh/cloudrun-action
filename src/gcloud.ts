@@ -107,7 +107,11 @@ export async function waitForDockerImage(
   )
   const url = `https://${imageUrl.host}/v2/${project}/${imageName}/manifests/${imageTag}`
   let attempt = 0
-  while (attempt < 100) {
+  const checkInterval = Number.parseInt(core.getInput('image_check_interval'))
+  const maxAttempts =
+    (Number.parseInt(core.getInput('image_check_timeout')) * 60) / checkInterval
+
+  while (attempt < maxAttempts) {
     attempt++
     core.debug(`Waiting for docker image to appear, attempt ${attempt}...`)
     core.debug(`Requesting ${url}`)
@@ -126,7 +130,7 @@ export async function waitForDockerImage(
       }
     }
 
-    await delay(5000)
+    await delay(checkInterval * 1000)
   }
   return false
 }
@@ -184,8 +188,9 @@ async function getCloudRunServiceURL(
         core.setOutput('url', res.data.status.url)
         return res.data.status.url
       } else {
-        core.debug(JSON.stringify(res, null, 4))
-        throw new Error(res.data.status.conditions[0].message)
+        throw new Error(
+          `${res.data.status.conditions[0].message}\nView logs for this revision: https://console.cloud.google.com/run/detail/${runRegion}/${name}/logs?project=${project}`
+        )
       }
     }
   }
@@ -201,7 +206,7 @@ export async function createOrUpdateCloudRunService(
   serviceAccountName: string,
   serviceAccountKey: string,
   vpcConnectorName: string
-): Promise<string> {
+): Promise<{url: string; logsUrl: string}> {
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
@@ -269,7 +274,10 @@ export async function createOrUpdateCloudRunService(
     }
 
     await setCloudRunServiceIAMPolicy(name, project, runRegion)
-    return await getCloudRunServiceURL(name, project, runRegion)
+    return {
+      url: await getCloudRunServiceURL(name, project, runRegion),
+      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${name}/logs?project=${project}`
+    }
   } catch (error) {
     core.setFailed(error.message)
     throw error

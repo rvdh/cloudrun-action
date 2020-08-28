@@ -33,7 +33,7 @@ async function main(): Promise<void> {
     github.updatePullRequestComment(comment_id, comment)
 
     try {
-      const url = await gcloud.createOrUpdateCloudRunService(
+      const {url, logsUrl} = await gcloud.createOrUpdateCloudRunService(
         name,
         runRegion,
         image,
@@ -42,6 +42,7 @@ async function main(): Promise<void> {
         vpcConnectorName
       )
       comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
+      comment += `Logs: ${logsUrl}\n`
       github.updatePullRequestComment(comment_id, comment)
     } catch (error) {
       comment += `🤖  Cloud Run Deployment: Deployment failed: ${error.message}.\n`
