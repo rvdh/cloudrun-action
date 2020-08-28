@@ -2,19 +2,24 @@ import * as os from 'os'
 import * as core from '@actions/core'
 import * as fs from 'fs'
 
-function setGoogleApplicationCredentials(serviceAccountKey: string): void {
-  // See if we already saved it to a file
-  const uniqueFilename = require('unique-filename')
+async function setGoogleApplicationCredentials(
+  serviceAccountKey: string
+): Promise<void> {
+  if ('GOOGLE_APPLICATION_CREDENTIALS'! in process.env) {
+    const uniqueFilename = require('unique-filename')
 
-  const randomTmpFile = uniqueFilename(os.tmpdir())
+    const randomTmpFile = uniqueFilename(os.tmpdir())
 
-  fs.writeFile(randomTmpFile, serviceAccountKey, function (err: Error | null) {
-    if (err) {
-      core.debug(String(err))
-    }
-  })
+    fs.writeFile(randomTmpFile, serviceAccountKey, function (
+      err: Error | null
+    ) {
+      if (err) {
+        core.debug(String(err))
+      }
+    })
 
-  core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+    core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+  }
 }
 
 function getCloudRunEnvironmentVariables(): {}[] {
@@ -77,7 +82,7 @@ export async function waitForDockerImage(
   serviceAccountKey: string
 ): Promise<boolean> {
   // Obtain user credentials to use for the request
-  setGoogleApplicationCredentials(serviceAccountKey)
+  await setGoogleApplicationCredentials(serviceAccountKey)
 
   const {google} = require('googleapis')
   const auth = new google.auth.GoogleAuth({
@@ -122,11 +127,11 @@ export async function waitForDockerImage(
   return false
 }
 
-function setCloudRunServiceIAMPolicy(
+async function setCloudRunServiceIAMPolicy(
   name: string,
   project: string,
   runRegion: string
-): void {
+): Promise<void> {
   const {google} = require('googleapis')
   const run = google.run('v1')
 
@@ -192,7 +197,7 @@ export async function createOrUpdateCloudRunService(
     const {google} = require('googleapis')
     const run = google.run('v1')
 
-    setGoogleApplicationCredentials(serviceAccountKey)
+    await setGoogleApplicationCredentials(serviceAccountKey)
     // Obtain user credentials to use for the request
     const auth = new google.auth.GoogleAuth({
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
@@ -254,7 +259,7 @@ export async function createOrUpdateCloudRunService(
       }
     }
 
-    setCloudRunServiceIAMPolicy(name, project, runRegion)
+    await setCloudRunServiceIAMPolicy(name, project, runRegion)
     return await getCloudRunServiceURL(name, project, runRegion)
   } catch (error) {
     core.setFailed(error.message)
