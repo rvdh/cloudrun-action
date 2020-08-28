@@ -32,16 +32,22 @@ async function main(): Promise<void> {
     comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
     github.updatePullRequestComment(comment_id, comment)
 
-    const url = gcloud.createOrUpdateCloudRunService(
-      name,
-      runRegion,
-      image,
-      serviceAccountName,
-      serviceAccountKey,
-      vpcConnectorName
-    )
-    comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
-    github.updatePullRequestComment(comment_id, comment)
+    try {
+      const url = await gcloud.createOrUpdateCloudRunService(
+        name,
+        runRegion,
+        image,
+        serviceAccountName,
+        serviceAccountKey,
+        vpcConnectorName
+      )
+      comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
+      github.updatePullRequestComment(comment_id, comment)
+    } catch (error) {
+      comment += `🤖  Cloud Run Deployment: Deployment failed: ${error.message}.\n`
+      github.updatePullRequestComment(comment_id, comment)
+      throw error
+    }
   } catch (error) {
     core.setFailed(error.message)
   }
