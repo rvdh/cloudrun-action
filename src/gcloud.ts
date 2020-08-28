@@ -148,11 +148,11 @@ function setCloudRunServiceIAMPolicy(
   }
 }
 
-function getCloudRunServiceURL(
+async function getCloudRunServiceURL(
   name: string,
   project: string,
   runRegion: string
-): string {
+): Promise<string> {
   const {google} = require('googleapis')
   const run = google.run('v1')
 
@@ -180,14 +180,14 @@ function getCloudRunServiceURL(
   )
 }
 
-export function createOrUpdateCloudRunService(
+export async function createOrUpdateCloudRunService(
   name: string,
   runRegion: string,
   image: string,
   serviceAccountName: string,
   serviceAccountKey: string,
   vpcConnectorName: string
-): string {
+): Promise<string> {
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
@@ -198,9 +198,9 @@ export function createOrUpdateCloudRunService(
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
     })
 
-    const authClient = auth.getClient()
+    const authClient = await auth.getClient()
     google.options({auth: authClient})
-    const project = auth.getProjectId()
+    const project = await auth.getProjectId()
 
     core.debug(
       `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
@@ -255,7 +255,7 @@ export function createOrUpdateCloudRunService(
     }
 
     setCloudRunServiceIAMPolicy(name, project, runRegion)
-    return getCloudRunServiceURL(name, project, runRegion)
+    return await getCloudRunServiceURL(name, project, runRegion)
   } catch (error) {
     core.setFailed(error.message)
     throw error
