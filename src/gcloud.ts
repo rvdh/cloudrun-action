@@ -19,6 +19,10 @@ async function setGoogleApplicationCredentials(
     })
 
     core.exportVariable('GOOGLE_APPLICATION_CREDENTIALS', randomTmpFile)
+    core.debug('Set credentials')
+    core.debug(`GAC is now ${process.env['GOOGLE_APPLICATION_CREDENTIALS']}`)
+  } else {
+    core.debug(`GAC = ${process.env['GOOGLE_APPLICATION_CREDENTIALS']}`)
   }
 }
 
