@@ -172,7 +172,7 @@ async function getCloudRunServiceURL(
     core.debug(`Waiting for service to become ready, attempt ${attempt}...`)
     await delay(500)
     try {
-      const res = run.namespaces.services.get(
+      const res = await run.namespaces.services.get(
         {
           name: `namespaces/${project}/services/${name}`
         },
@@ -219,7 +219,7 @@ export async function createOrUpdateCloudRunService(
       `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
     )
     try {
-      run.namespaces.services.get(
+      await run.namespaces.services.get(
         {
           name: `namespaces/${project}/services/${name}`
         },
@@ -228,7 +228,7 @@ export async function createOrUpdateCloudRunService(
         }
       )
       core.debug(`Updating service ${name}.`)
-      run.namespaces.services.replaceService(
+      await run.namespaces.services.replaceService(
         {
           name: `namespaces/${project}/services/${name}`,
           requestBody: cloudRunCreateService(
@@ -248,7 +248,7 @@ export async function createOrUpdateCloudRunService(
       core.debug(JSON.stringify(error, null, 4))
       if (error.code === 404) {
         core.debug(`Creating service ${name}`)
-        run.namespaces.services.create(
+        await run.namespaces.services.create(
           {
             parent: `namespaces/${project}`,
             requestBody: cloudRunCreateService(
