@@ -183,6 +183,8 @@ async function getCloudRunServiceURL(
       if (res.data.status.url) {
         core.setOutput('url', res.data.status.url)
         return res.data.status.url
+      } else {
+        core.debug(JSON.stringify(res, null, 4))
       }
     } catch (error) {
       core.debug(JSON.stringify(error, null, 4))
