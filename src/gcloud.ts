@@ -180,11 +180,14 @@ async function getCloudRunServiceURL(
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
       )
-      if (res.data.status.url) {
-        core.setOutput('url', res.data.status.url)
-        return res.data.status.url
-      } else {
-        core.debug(JSON.stringify(res, null, 4))
+      if (res.data.status.conditions[0].status !== 'Unknown') {
+        if (res.data.status.url) {
+          core.setOutput('url', res.data.status.url)
+          return res.data.status.url
+        } else {
+          core.debug(JSON.stringify(res, null, 4))
+          throw new Error(res.data.status.conditions[0].message)
+        }
       }
     } catch (error) {
       core.debug(JSON.stringify(error, null, 4))
