@@ -283,3 +283,48 @@ export async function createOrUpdateCloudRunService(
     throw error
   }
 }
+
+export async function deleteCloudRunService(
+  name: string,
+  runRegion: string,
+  serviceAccountKey: string
+): Promise<void> {
+  try {
+    const {google} = require('googleapis')
+    const run = google.run('v1')
+
+    await setGoogleApplicationCredentials(serviceAccountKey)
+    // Obtain user credentials to use for the request
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    })
+
+    const authClient = await auth.getClient()
+    google.options({auth: authClient})
+    const project = await auth.getProjectId()
+
+    core.debug(
+      `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
+    )
+    try {
+      await run.namespaces.services.delete(
+        {
+          name: `namespaces/${project}/services/${name}`
+        },
+        {
+          rootUrl: `https://${runRegion}-run.googleapis.com`
+        }
+      )
+      core.info(`Service ${name} deleted`)
+    } catch (error) {
+      if (error.code === 404) {
+        core.info(`Service ${name} does not exist, unable to delete`)
+        return
+      }
+      throw error
+    }
+  } catch (error) {
+    core.setFailed(error.message)
+    throw error
+  }
+}
