@@ -171,26 +171,22 @@ async function getCloudRunServiceURL(
     attempt++
     core.debug(`Waiting for service to become ready, attempt ${attempt}...`)
     await delay(500)
-    try {
-      const res = await run.namespaces.services.get(
-        {
-          name: `namespaces/${project}/services/${name}`
-        },
-        {
-          rootUrl: `https://${runRegion}-run.googleapis.com`
-        }
-      )
-      if (res.data.status.conditions[0].status !== 'Unknown') {
-        if (res.data.status.url) {
-          core.setOutput('url', res.data.status.url)
-          return res.data.status.url
-        } else {
-          core.debug(JSON.stringify(res, null, 4))
-          throw new Error(res.data.status.conditions[0].message)
-        }
+    const res = await run.namespaces.services.get(
+      {
+        name: `namespaces/${project}/services/${name}`
+      },
+      {
+        rootUrl: `https://${runRegion}-run.googleapis.com`
       }
-    } catch (error) {
-      core.debug(JSON.stringify(error, null, 4))
+    )
+    if (res.data.status.conditions[0].status !== 'Unknown') {
+      if (res.data.status.url) {
+        core.setOutput('url', res.data.status.url)
+        return res.data.status.url
+      } else {
+        core.debug(JSON.stringify(res, null, 4))
+        throw new Error(res.data.status.conditions[0].message)
+      }
     }
   }
   throw new Error(
