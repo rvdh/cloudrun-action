@@ -20,19 +20,19 @@ async function main(): Promise<void> {
     // update comment (checking for image)
     comment += `🤖  Cloud Run Deployment: waiting for docker image ${image} to be available on Google Container Registry.\n`
     // wait for image
-    await github.updatePullRequestComment(comment_id, comment)
+    github.updatePullRequestComment(comment_id, comment)
 
-    if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
+    if (!gcloud.waitForDockerImage(image, serviceAccountKey)) {
       comment += `🤖  Cloud Run Deployment: Docker image not found, stopping.\n`
-      await github.updatePullRequestComment(comment_id, comment)
+      github.updatePullRequestComment(comment_id, comment)
       core.setFailed('Docker image not found, stopping.')
       return
     }
 
     comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
-    await github.updatePullRequestComment(comment_id, comment)
+    github.updatePullRequestComment(comment_id, comment)
 
-    const url = await gcloud.createOrUpdateCloudRunService(
+    const url = gcloud.createOrUpdateCloudRunService(
       name,
       runRegion,
       image,
@@ -41,7 +41,7 @@ async function main(): Promise<void> {
       vpcConnectorName
     )
     comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
-    await github.updatePullRequestComment(comment_id, comment)
+    github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     core.setFailed(error.message)
   }

@@ -180,14 +180,14 @@ function getCloudRunServiceURL(
   )
 }
 
-export async function createOrUpdateCloudRunService(
+export function createOrUpdateCloudRunService(
   name: string,
   runRegion: string,
   image: string,
   serviceAccountName: string,
   serviceAccountKey: string,
   vpcConnectorName: string
-): Promise<string> {
+): string {
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
@@ -198,15 +198,15 @@ export async function createOrUpdateCloudRunService(
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
     })
 
-    const authClient = await auth.getClient()
+    const authClient = auth.getClient()
     google.options({auth: authClient})
-    const project = await auth.getProjectId()
+    const project = auth.getProjectId()
 
     core.debug(
       `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
     )
     try {
-      const existsRes = await run.namespaces.services.get(
+      run.namespaces.services.get(
         {
           name: `namespaces/${project}/services/${name}`
         },
@@ -214,42 +214,37 @@ export async function createOrUpdateCloudRunService(
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
       )
-      if (existsRes) {
-        const requestBody = cloudRunCreateService(
-          name,
-          project,
-          image,
-          serviceAccountName,
-          vpcConnectorName
-        )
-        core.debug(`Updating service ${name}.`)
-        await run.namespaces.services.replaceService(
-          {
-            name: `namespaces/${project}/services/${name}`,
-            requestBody
-          },
-          {
-            rootUrl: `https://${runRegion}-run.googleapis.com`
-          }
-        )
-        core.debug(`Service ${name} updated`)
-      }
+      core.debug(`Updating service ${name}.`)
+      run.namespaces.services.replaceService(
+        {
+          name: `namespaces/${project}/services/${name}`,
+          requestBody: cloudRunCreateService(
+            name,
+            project,
+            image,
+            serviceAccountName,
+            vpcConnectorName
+          )
+        },
+        {
+          rootUrl: `https://${runRegion}-run.googleapis.com`
+        }
+      )
+      core.debug(`Service ${name} updated`)
     } catch (error) {
       core.debug(JSON.stringify(error, null, 4))
       if (error.code === 404) {
-        const requestBody = cloudRunCreateService(
-          name,
-          project,
-          image,
-          serviceAccountName,
-          vpcConnectorName
-        )
         core.debug(`Creating service ${name}`)
-
-        await run.namespaces.services.create(
+        run.namespaces.services.create(
           {
             parent: `namespaces/${project}`,
-            requestBody
+            requestBody: cloudRunCreateService(
+              name,
+              project,
+              image,
+              serviceAccountName,
+              vpcConnectorName
+            )
           },
           {
             rootUrl: `https://${runRegion}-run.googleapis.com`
