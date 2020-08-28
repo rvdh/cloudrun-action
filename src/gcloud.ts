@@ -5,7 +5,7 @@ import * as fs from 'fs'
 async function setGoogleApplicationCredentials(
   serviceAccountKey: string
 ): Promise<void> {
-  if ('GOOGLE_APPLICATION_CREDENTIALS'! in process.env) {
+  if (!process.env['GOOGLE_APPLICATION_CREDENTIALS']) {
     const uniqueFilename = require('unique-filename')
 
     const randomTmpFile = uniqueFilename(os.tmpdir())
