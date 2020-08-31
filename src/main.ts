@@ -3,11 +3,15 @@ import * as gcloud from './gcloud'
 import * as github from './github'
 
 async function create(): Promise<void> {
-  const name: string = core.getInput('name')
-  const serviceAccountKey: string = core.getInput('service_account_key')
-  const runRegion: string = core.getInput('run_region')
-  const image: string = core.getInput('image')
-  const serviceAccountName: string = core.getInput('service_account_name')
+  const name: string = core.getInput('name', {required: true})
+  const serviceAccountKey: string = core.getInput('service_account_key', {
+    required: true
+  })
+  const runRegion: string = core.getInput('run_region', {required: true})
+  const image: string = core.getInput('image', {required: true})
+  const serviceAccountName: string = core.getInput('service_account_name', {
+    required: true
+  })
   const vpcConnectorName: string = core.getInput('vpc_connector_name')
 
   core.info(`Deploying docker image ${image}...`)
@@ -51,9 +55,11 @@ async function create(): Promise<void> {
 }
 
 async function destroy(): Promise<void> {
-  const name: string = core.getInput('name')
-  const serviceAccountKey: string = core.getInput('service_account_key')
-  const runRegion: string = core.getInput('run_region')
+  const name: string = core.getInput('name', {required: true})
+  const serviceAccountKey: string = core.getInput('service_account_key', {
+    required: true
+  })
+  const runRegion: string = core.getInput('run_region', {required: true})
 
   core.info(`Deleting Cloud Run deployment ${name}...`)
 
