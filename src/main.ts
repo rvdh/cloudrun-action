@@ -82,7 +82,7 @@ async function destroy(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    if (!core.getInput('delete_service')) {
+    if (Boolean(core.getInput('delete_service')) === false) {
       create()
     } else {
       destroy()
