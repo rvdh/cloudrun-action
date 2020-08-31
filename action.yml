@@ -37,7 +37,7 @@ inputs:
     description: 'Default time in seconds between checks for the docker image to appear on the Google Container Registry.'
   delete_service:
     required: false
-    default: 'false'
+    default: false
     description: 'Set to true to delete the Cloud Run service'
 outputs:
   url:

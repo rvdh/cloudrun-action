@@ -82,8 +82,8 @@ async function destroy(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
-    core.info(`delete_service = ${Boolean(core.getInput('delete_service'))}`)
-    if (Boolean(core.getInput('delete_service')) === false) {
+    core.info(`delete_service = ${core.getInput('delete_service')}`)
+    if (core.getInput('delete_service') === 'false') {
       create()
     } else {
       destroy()
