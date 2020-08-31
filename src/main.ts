@@ -55,26 +55,28 @@ async function create(): Promise<void> {
 }
 
 async function destroy(): Promise<void> {
-  const name: string = core.getInput('name', {required: true})
-  const serviceAccountKey: string = core.getInput('service_account_key', {
-    required: true
-  })
-  const runRegion: string = core.getInput('run_region', {required: true})
-
-  core.info(`Deleting Cloud Run deployment ${name}...`)
-
-  // add github comment
-  let comment = `🤖  Cloud Run Deployment: Deleting\n`
-  const comment_id = await github.addPullRequestComment(comment)
-
   try {
-    await gcloud.deleteCloudRunService(name, runRegion, serviceAccountKey)
-    comment += `🤖  Cloud Run Deployment: Deployment succesfully deleted.\n`
-    github.updatePullRequestComment(comment_id, comment)
+    const name: string = core.getInput('name', {required: true})
+    const serviceAccountKey: string = core.getInput('service_account_key', {
+      required: true
+    })
+    const runRegion: string = core.getInput('run_region', {required: true})
+    core.info(`Deleting Cloud Run deployment ${name}...`)
+
+    // add github comment
+    let comment = `🤖  Cloud Run Deployment: Deleting\n`
+    const comment_id = await github.addPullRequestComment(comment)
+    try {
+      await gcloud.deleteCloudRunService(name, runRegion, serviceAccountKey)
+      comment += `🤖  Cloud Run Deployment: Deployment succesfully deleted.\n`
+      github.updatePullRequestComment(comment_id, comment)
+    } catch (error) {
+      comment += `🤖  Cloud Run Deployment: Deployment deletion failed: ${error.message}.\n`
+      github.updatePullRequestComment(comment_id, comment)
+      throw error
+    }
   } catch (error) {
-    comment += `🤖  Cloud Run Deployment: Deployment deletion failed: ${error.message}.\n`
-    github.updatePullRequestComment(comment_id, comment)
-    throw error
+    core.setFailed(error.message)
   }
 }
 
