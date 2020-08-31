@@ -29,7 +29,7 @@ inputs:
     description: 'Allow unauthenticated invocations. Set this to true to create a public API or website, or false to manage authorized users with Cloud IAM.'
   image_check_timeout:
     required: false
-    default: 10
+    default: 30
     description: 'Default time to wait in minutes for the docker image to appear on the Google Container Registry.'
   image_check_interval:
     required: false
