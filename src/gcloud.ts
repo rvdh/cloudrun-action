@@ -274,8 +274,9 @@ export async function createOrUpdateCloudRunService(
     }
 
     await setCloudRunServiceIAMPolicy(name, project, runRegion)
+    const url = await getCloudRunServiceURL(name, project, runRegion)
     return {
-      url: await getCloudRunServiceURL(name, project, runRegion),
+      url,
       logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${name}/logs?project=${project}`
     }
   } catch (error) {
