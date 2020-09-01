@@ -145,7 +145,7 @@ async function setCloudRunServiceIAMPolicy(
 
   // Set IAM policy to allow unauthenticated access
   if (core.getInput('allow_unauthenticated')) {
-    run.projects.locations.services.setIamPolicy({
+    await run.projects.locations.services.setIamPolicy({
       resource: `projects/${project}/locations/${runRegion}/services/${name}`,
       requestBody: {
         policy: {
