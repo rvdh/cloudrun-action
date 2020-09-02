@@ -3,8 +3,6 @@ import * as core from '@actions/core'
 export async function getEnvVarsFromImage(
   name: string
 ): Promise<string[] | undefined> {
-  const Docker = require('dockerode')
-  const docker = new Docker({socketPath: '/var/run/docker.sock'})
   const serviceAccountKey: string = core.getInput('service_account_key', {
     required: true
   })
@@ -16,15 +14,21 @@ export async function getEnvVarsFromImage(
     password: serviceAccountKey,
     auth: '',
     email: '',
-    serveraddress: `https://${imageUrl.host}/v2`
+    serveraddress: imageUrl.host
   }
+  const authData = new Buffer(JSON.stringify(auth)).toString('base64')
+
+  const got = require('got')
 
   try {
-    const image = await docker.pull(name, {authconfig: auth})
+    const image = await got.post(
+      `unix:/var/run/docker.sock:/images/create?fromSrc=${name}`,
+      {headers: {'X-Registry-Auth': authData}}
+    )
     //const imageInspect = image.inspect()
     //core.info(JSON.stringify(imageInspect, null, 4))
     core.info(JSON.stringify(image, null, 4))
-    return (await image).Config?.Env
+    return image
   } catch (error) {
     core.setFailed(error.message)
   }

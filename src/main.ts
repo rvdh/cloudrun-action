@@ -32,9 +32,10 @@ async function create(): Promise<void> {
     core.setFailed('Docker image not found, stopping.')
     return
   }
+
   comment += `🤖  Cloud Run Deployment: Docker image found, configurable environment variables:\n`
   const envVars = await docker.getEnvVarsFromImage(image)
-  comment += `~~~\n${envVars}\n~~~`
+  comment += `~~~\n${envVars}\n~~~\n`
   github.updatePullRequestComment(comment_id, comment)
 
   try {
