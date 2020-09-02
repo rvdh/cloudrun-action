@@ -21,6 +21,7 @@ export async function getEnvVarsFromImage(
   const got = require('got')
 
   try {
+    core.debug(`Sending pull image command for ${name}`)
     const image = await got.post(
       `unix:/var/run/docker.sock:/images/create?fromSrc=${name}`,
       {headers: {'X-Registry-Auth': authData}}
