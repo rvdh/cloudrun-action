@@ -28,7 +28,7 @@
     "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
     "axios": "^0.20.0",
-    "docker-client": "^1.38.1",
+    "dockerode": "^3.2.1",
     "googleapis": "^59.0.0",
     "unique-filename": "^1.1.1"
   },

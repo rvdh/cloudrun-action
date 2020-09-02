@@ -1,12 +1,13 @@
 import * as core from '@actions/core'
-import {ImageApi} from 'docker-client'
 
 export async function getEnvVarsFromImage(
   name: string
 ): Promise<string[] | undefined> {
-  const api = new ImageApi()
+  const Docker = require('dockerode')
+  const docker = new Docker({socketPath: '/var/run/docker.sock'})
   try {
-    const image = api.imageInspect(name)
+    const image = await docker.imageInspect(name)
+    core.info(JSON.stringify(image, null, 4))
     return (await image).Config?.Env
   } catch (error) {
     core.setFailed(error.message)
