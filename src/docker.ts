@@ -6,7 +6,7 @@ export async function getEnvVarsFromImage(
   const Docker = require('dockerode')
   const docker = new Docker({socketPath: '/var/run/docker.sock'})
   try {
-    const image = await docker.imageInspect(name)
+    const image = await docker.Image.imageInspect(name)
     core.info(JSON.stringify(image, null, 4))
     return (await image).Config?.Env
   } catch (error) {
