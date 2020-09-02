@@ -21,8 +21,8 @@ export async function getEnvVarsFromImage(
 
   try {
     const image = await docker.pull(name, {authconfig: auth})
-    const imageInspect = image.inspect()
-    core.info(JSON.stringify(imageInspect, null, 4))
+    //const imageInspect = image.inspect()
+    //core.info(JSON.stringify(imageInspect, null, 4))
     core.info(JSON.stringify(image, null, 4))
     return (await image).Config?.Env
   } catch (error) {
