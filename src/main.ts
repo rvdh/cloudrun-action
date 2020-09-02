@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as gcloud from './gcloud'
 import * as github from './github'
+import * as docker from './docker'
 
 async function create(): Promise<void> {
   const name: string = core.getInput('name', {required: true})
@@ -31,8 +32,9 @@ async function create(): Promise<void> {
     core.setFailed('Docker image not found, stopping.')
     return
   }
-
-  comment += `🤖  Cloud Run Deployment: Docker image found, starting deployment.\n`
+  comment += `🤖  Cloud Run Deployment: Docker image found, configurable environment variables:\n`
+  const envVars = await docker.getEnvVarsFromImage(image)
+  comment += `~~~\n${envVars}\n~~~`
   github.updatePullRequestComment(comment_id, comment)
 
   try {
