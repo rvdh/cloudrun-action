@@ -16,7 +16,7 @@ export async function getEnvVarsFromImage(
     email: '',
     serveraddress: imageUrl.host
   }
-  const authData = new Buffer(JSON.stringify(auth)).toString('base64')
+  const authData = Buffer.from(JSON.stringify(auth)).toString('base64')
 
   const got = require('got')
 
@@ -26,6 +26,7 @@ export async function getEnvVarsFromImage(
       `unix:/var/run/docker.sock:/images/create?fromSrc=${name}`,
       {headers: {'X-Registry-Auth': authData}}
     )
+    core.debug(`image = ${image}`)
     //const imageInspect = image.inspect()
     //core.info(JSON.stringify(imageInspect, null, 4))
     core.info(JSON.stringify(image, null, 4))
