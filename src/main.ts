@@ -52,7 +52,6 @@ async function create(): Promise<void> {
   }
   await github.updatePullRequestComment(comment_id, comment)
 
-  comment += '- [ ] Starting Cloud Run Service\n'
   const configuredEnvVars = await github.getConfiguredEnvVars(envVars)
   if (configuredEnvVars.length > 0) {
     comment += `<details><summary>**Configured** environment variables</summary>\n<ul>\n`
@@ -60,10 +59,11 @@ async function create(): Promise<void> {
     comment += `\nKEY | VALUE\n--- | ---\n`
     for (const key of configuredEnvVars) {
       core.debug(JSON.stringify(key, null, 4))
-      comment += `${key} | ${key}\n`
+      comment += `${key.name} | ${key.value}\n`
     }
     comment += `\n</details>\n\n`
   }
+  comment += '- [ ] Starting Cloud Run Service\n'
   await github.updatePullRequestComment(comment_id, comment)
 
   try {

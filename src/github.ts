@@ -61,7 +61,7 @@ export async function updatePullRequestComment(
 
 export async function getConfiguredEnvVars(
   supportedEnvVars: string[] | undefined
-): Promise<{}[]> {
+): Promise<{name: string; value: string}[]> {
   // get environment variables from workflow file
   const envVars = getCloudRunEnvironmentVariables()
 

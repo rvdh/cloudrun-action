@@ -22,18 +22,26 @@ async function setGoogleApplicationCredentials(
   }
 }
 
-export function getCloudRunEnvironmentVariables(): {}[] {
-  const environment = []
+export function getCloudRunEnvironmentVariables(): {
+  name: string
+  value: string
+}[] {
+  const entries = []
   for (const key in process.env) {
     if (key.startsWith('CLOUDRUN_ACTION_')) {
       const value = process.env[key]
-      const entry = {
-        name: key.replace('CLOUDRUN_ACTION_', ''),
-        value
+      if (value !== undefined) {
+        const entry = {
+          name: key.replace('CLOUDRUN_ACTION_', ''),
+          value
+        }
+        entries.push(entry)
       }
-      environment.push(entry)
     }
   }
+
+  const environment: {name: string; value: string}[] = entries
+
   return environment
 }
 
