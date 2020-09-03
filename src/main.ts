@@ -18,25 +18,29 @@ async function create(): Promise<void> {
   core.info(`Deploying docker image ${image}...`)
 
   // add github comment
-  let comment = `⚠️ Cloud Run Deployment in progress ⚠️\n`
+  let comment = `## ⚠️ Cloud Run Deployment in progress ⚠️\n`
   const comment_id = await github.addPullRequestComment(comment)
 
   // update comment (checking for image)
-  comment += `- [ ] <details><summary>Waiting for the docker image to be available on Google Container Registry.</summary>Image: ${image}</details>\n`
+  comment += `<details><summary>Docker image</summary>Image: ${image}</details>\n\n`
+  comment += `- [ ] Waiting for the docker image to be available on Google Container Registry.\n`
   // wait for image
-  github.updatePullRequestComment(comment_id, comment)
+  await github.updatePullRequestComment(comment_id, comment)
 
   if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
     comment += `Docker image not found, stopping.\n`
-    github.updatePullRequestComment(comment_id, comment)
+    await github.updatePullRequestComment(comment_id, comment)
     core.setFailed('Docker image not found, stopping.')
     return
   }
   comment = comment.replace('- [ ]', '- [x]')
-  github.updatePullRequestComment(comment_id, comment)
+  comment += `- [ ] Pulling and inspecting image to determine configurable environment variables.\n`
+  await github.updatePullRequestComment(comment_id, comment)
 
   const envVars = await docker.getEnvVarsFromImage(image)
   if (envVars !== undefined) {
+    comment = comment.replace('- [ ]', '- [x]')
+
     comment += `<details><summary>Configurable environment variables</summary>\n<ul>\n`
 
     comment += `\nKEY | VALUE\n--- | ---\n`
@@ -45,11 +49,11 @@ async function create(): Promise<void> {
     }
     comment += '```\n'
 
-    comment += `</details>\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n\n`
-    github.updatePullRequestComment(comment_id, comment)
+    comment += `\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n</details>\n\n`
+    await github.updatePullRequestComment(comment_id, comment)
   }
   comment += '- [ ] Starting Cloud Run Service\n'
-  github.updatePullRequestComment(comment_id, comment)
+  await github.updatePullRequestComment(comment_id, comment)
 
   try {
     const {url, logsUrl} = await gcloud.createOrUpdateCloudRunService(
@@ -64,10 +68,10 @@ async function create(): Promise<void> {
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
 
-    github.updatePullRequestComment(comment_id, comment)
+    await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     comment += `- Deployment failed: ${error.message}.\n`
-    github.updatePullRequestComment(comment_id, comment)
+    await github.updatePullRequestComment(comment_id, comment)
     throw error
   }
 }
