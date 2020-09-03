@@ -23,6 +23,19 @@ export async function addPullRequestComment(comment: string): Promise<number> {
   return -1
 }
 
+export async function getUsername(): Promise<string> {
+  const githubToken = core.getInput('github_token')
+
+  if (githubToken) {
+    const octokit = github.getOctokit(githubToken, {
+      userAgent: 'rvdh/cloudrun-action'
+    })
+    const authenticatedUser = await octokit.users.getAuthenticated()
+    core.debug(JSON.stringify(authenticatedUser, null, 4))
+  }
+  return 'foo'
+}
+
 export async function updatePullRequestComment(
   comment_id: number,
   comment: string
