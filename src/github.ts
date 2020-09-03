@@ -85,8 +85,12 @@ export async function getConfiguredEnvVars(
       const envVarName = key.split('=')[0]
       supportedEnvVarNames.push(envVarName)
     }
+    core.debug(
+      `supportedEnvVarNames: ${JSON.stringify(supportedEnvVarNames, null, 4)}`
+    )
 
     for (const key of issueLabels) {
+      core.debug(`issue label: ${key.name}`)
       if (key.name === trigger_label) continue
 
       if (key.name in supportedEnvVarNames) {
@@ -94,6 +98,8 @@ export async function getConfiguredEnvVars(
           name: key.name,
           value: key.description
         })
+      } else {
+        core.debug(`${key.name} not in ${supportedEnvVarNames}`)
       }
     }
   }
