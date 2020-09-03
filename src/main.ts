@@ -18,11 +18,11 @@ async function create(): Promise<void> {
   core.info(`Deploying docker image ${image}...`)
 
   // add github comment
-  let comment = `🤖&nbsp;Cloud Run Deployment in progress 🤖\n`
+  let comment = `⚠️ Cloud Run Deployment in progress ⚠️\n`
   const comment_id = await github.addPullRequestComment(comment)
 
   // update comment (checking for image)
-  comment += `<details><summary>Waiting for the docker image to be available on Google Container Registry.</summary>Image: ${image}</details>\n`
+  comment += `- [ ] <details><summary>Waiting for the docker image to be available on Google Container Registry.</summary>Image: ${image}</details>\n`
   // wait for image
   github.updatePullRequestComment(comment_id, comment)
 
@@ -32,20 +32,24 @@ async function create(): Promise<void> {
     core.setFailed('Docker image not found, stopping.')
     return
   }
+  comment = comment.replace('- [ ]', '- [x]')
+  github.updatePullRequestComment(comment_id, comment)
 
   const envVars = await docker.getEnvVarsFromImage(image)
   if (envVars !== undefined) {
-    comment += `<details><summary>Configurable environment variables</summary><ul>\n`
+    comment += `<details><summary>Configurable environment variables</summary>\n<ul>\n`
 
-    comment += `\n\`\`\`bash\n`
+    comment += `\nKEY | VALUE\n--- | ---\n`
     for (let i = 0; i < envVars?.length; i++) {
-      comment += `${envVars[i]}\n`
+      comment += `${envVars[i].replace('=', ' | ')}\n`
     }
     comment += '```\n'
 
-    comment += `</details>\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n`
+    comment += `</details>\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n\n`
     github.updatePullRequestComment(comment_id, comment)
   }
+  comment += '- [ ] Starting Cloud Run Service\n'
+  github.updatePullRequestComment(comment_id, comment)
 
   try {
     const {url, logsUrl} = await gcloud.createOrUpdateCloudRunService(
@@ -56,11 +60,13 @@ async function create(): Promise<void> {
       serviceAccountKey,
       vpcConnectorName
     )
-    comment += `🤖  Cloud Run Deployment: Deployment succesful, url: ${url}.\n`
-    comment += `Logs: ${logsUrl}\n`
+    comment += `- URL: ${url}.\n`
+    comment += `- Logs: ${logsUrl}\n`
+    comment = comment.replace('- [ ]', '- [x]')
+
     github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
-    comment += `🤖  Cloud Run Deployment: Deployment failed: ${error.message}.\n`
+    comment += `- Deployment failed: ${error.message}.\n`
     github.updatePullRequestComment(comment_id, comment)
     throw error
   }
