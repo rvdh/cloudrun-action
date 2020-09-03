@@ -59,6 +59,7 @@ async function create(): Promise<void> {
 
     comment += `\nKEY | VALUE\n--- | ---\n`
     for (const key of configuredEnvVars) {
+      core.debug(JSON.stringify(key, null, 4))
       comment += `${key} | ${key}\n`
     }
     comment += `\n</details>\n\n`
