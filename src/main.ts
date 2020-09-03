@@ -18,7 +18,7 @@ async function create(): Promise<void> {
   core.info(`Deploying docker image ${image}...`)
 
   // add github comment
-  let comment = `🤖 Cloud Run Deployment in progress 🤖\n`
+  let comment = `🤖&nbsp;Cloud Run Deployment in progress 🤖\n`
   const comment_id = await github.addPullRequestComment(comment)
 
   // update comment (checking for image)
@@ -33,11 +33,19 @@ async function create(): Promise<void> {
     return
   }
 
-  comment += `<details><summary>Configurable environment variables</summary>\n`
   const envVars = await docker.getEnvVarsFromImage(image)
-  comment += `~~~\n${envVars?.join('\n')}\n~~~\n`
-  comment += `</details>\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n`
-  github.updatePullRequestComment(comment_id, comment)
+  if (envVars !== undefined) {
+    comment += `<details><summary>Configurable environment variables</summary><ul>\n`
+
+    comment += `\n\`\`\`bash\n`
+    for (let i = 0; i < envVars?.length; i++) {
+      comment += `${envVars[i]}\n`
+    }
+    comment += '```\n'
+
+    comment += `</details>\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n`
+    github.updatePullRequestComment(comment_id, comment)
+  }
 
   try {
     const {url, logsUrl} = await gcloud.createOrUpdateCloudRunService(
