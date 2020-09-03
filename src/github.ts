@@ -82,7 +82,9 @@ export async function getConfiguredEnvVars(
 
     const supportedEnvVarNames = []
     for (const key in supportedEnvVars) {
-      const envVarName = key.split('=')[0]
+      core.debug(key)
+      core.debug(JSON.stringify(key.split('='), null, 4))
+      const envVarName = key.split('=', 2)[0]
       supportedEnvVarNames.push(envVarName)
     }
     core.debug(
