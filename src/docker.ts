@@ -1,8 +1,6 @@
 import * as core from '@actions/core'
 
-export async function getEnvVarsFromImage(
-  name: string
-): Promise<string[] | undefined> {
+export async function getEnvVarsFromImage(name: string): Promise<string[]> {
   const serviceAccountKey: string = core.getInput('service_account_key', {
     required: true
   })
@@ -41,5 +39,5 @@ export async function getEnvVarsFromImage(
     core.setFailed(error.response.body)
   }
 
-  return undefined
+  return []
 }
