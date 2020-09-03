@@ -28,6 +28,8 @@ export async function getEnvVarsFromImage(
         headers: {'X-Registry-Auth': authData}
       }
     )
+    core.debug(JSON.stringify(response.request, null, 4))
+
     core.debug(JSON.stringify(response.body, null, 4))
 
     // inspect the image
