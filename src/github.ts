@@ -91,10 +91,18 @@ export async function getConfiguredEnvVars(
       if (key.name === trigger_label) continue
 
       if (supportedEnvVarNames.includes(key.name)) {
-        envVars.push({
-          name: key.name,
-          value: key.description
-        })
+        let found = false
+        for (const currentKey of envVars) {
+          if (currentKey.name === key.name) {
+            currentKey.value = key.description
+            found = true
+          }
+        }
+        if (!found)
+          envVars.push({
+            name: key.name,
+            value: key.description
+          })
       } else {
         core.debug(`${key.name} not in ${supportedEnvVarNames}`)
       }
