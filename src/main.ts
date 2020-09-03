@@ -72,7 +72,8 @@ async function create(): Promise<void> {
       image,
       serviceAccountName,
       serviceAccountKey,
-      vpcConnectorName
+      vpcConnectorName,
+      configuredEnvVars
     )
     comment += `- URL: ${url}.\n`
     comment += `- Logs: ${logsUrl}\n`

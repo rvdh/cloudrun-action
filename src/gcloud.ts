@@ -50,7 +50,11 @@ function cloudRunCreateService(
   project: string,
   image: string,
   serviceAccountName: string,
-  vpcConnectorName: string
+  vpcConnectorName: string,
+  envVars: {
+    name: string
+    value: string
+  }[]
 ): {} {
   return {
     apiVersion: 'serving.knative.dev/v1',
@@ -71,7 +75,7 @@ function cloudRunCreateService(
           containers: [
             {
               image,
-              env: getCloudRunEnvironmentVariables()
+              env: envVars
             }
           ]
         }
@@ -209,7 +213,11 @@ export async function createOrUpdateCloudRunService(
   image: string,
   serviceAccountName: string,
   serviceAccountKey: string,
-  vpcConnectorName: string
+  vpcConnectorName: string,
+  envVars: {
+    name: string
+    value: string
+  }[]
 ): Promise<{url: string; logsUrl: string}> {
   try {
     const {google} = require('googleapis')
@@ -246,7 +254,8 @@ export async function createOrUpdateCloudRunService(
             project,
             image,
             serviceAccountName,
-            vpcConnectorName
+            vpcConnectorName,
+            envVars
           )
         },
         {
@@ -266,7 +275,8 @@ export async function createOrUpdateCloudRunService(
               project,
               image,
               serviceAccountName,
-              vpcConnectorName
+              vpcConnectorName,
+              envVars
             )
           },
           {
