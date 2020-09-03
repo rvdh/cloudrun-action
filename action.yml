@@ -39,6 +39,10 @@ inputs:
     required: false
     default: false
     description: 'Set to true to delete the Cloud Run service'
+  trigger_label:
+    required: false
+    default: 'lab_environment'
+    description: 'The label that needs to be added to a pull request to trigger deployment to Cloud Run'
 outputs:
   url:
     description: 'The URL assigned by Google Cloud Run to the service'

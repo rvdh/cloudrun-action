@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {getCloudRunEnvironmentVariables} from './gcloud'
 
 export async function addPullRequestComment(comment: string): Promise<number> {
   const githubToken = core.getInput('github_token')
@@ -56,4 +57,46 @@ export async function updatePullRequestComment(
     }
   }
   return -1
+}
+
+export async function getConfiguredEnvVars(
+  supportedEnvVars: string[] | undefined
+): Promise<{}[]> {
+  // get environment variables from workflow file
+  const envVars = getCloudRunEnvironmentVariables()
+
+  // get labels from pull request
+  const githubToken = core.getInput('github_token')
+  const trigger_label = core.getInput('trigger_label')
+
+  if (githubToken) {
+    const octokit = github.getOctokit(githubToken, {
+      userAgent: 'rvdh/cloudrun-action'
+    })
+
+    const {data: issueLabels} = await octokit.issues.listLabelsOnIssue({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: github.context.issue.number
+    })
+
+    const supportedEnvVarNames = []
+    for (const key in supportedEnvVars) {
+      const envVarName = key.split('=')[0]
+      supportedEnvVarNames.push(envVarName)
+    }
+
+    for (const key of issueLabels) {
+      if (key.name === trigger_label) continue
+
+      if (key.name in supportedEnvVarNames) {
+        envVars.push({
+          name: key.name,
+          value: key.description
+        })
+      }
+    }
+  }
+
+  return envVars
 }

@@ -18,7 +18,7 @@ async function create(): Promise<void> {
   core.info(`Deploying docker image ${image}...`)
 
   // add github comment
-  let comment = `### ⚠️ Cloud Run Deployment in progress ⚠️\n`
+  let comment = `### :construction: Cloud Run Deployment in progress :construction:\n`
   const comment_id = await github.addPullRequestComment(comment)
 
   // update comment (checking for image)
@@ -38,9 +38,9 @@ async function create(): Promise<void> {
   await github.updatePullRequestComment(comment_id, comment)
 
   const envVars = await docker.getEnvVarsFromImage(image)
-  if (envVars !== undefined) {
-    comment = comment.replace('- [ ]', '- [x]')
+  comment = comment.replace('- [ ]', '- [x]')
 
+  if (envVars !== undefined) {
     comment += `<details><summary>Configurable environment variables</summary>\n<ul>\n`
 
     comment += `\nKEY | VALUE\n--- | ---\n`
@@ -48,10 +48,21 @@ async function create(): Promise<void> {
       comment += `${envVars[i].replace('=', ' | ')}\n`
     }
 
-    comment += `\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n</details>\n\n`
-    await github.updatePullRequestComment(comment_id, comment)
+    comment += `\nConfigure environment variables by adding labels to the pull request, the name of the label is the environment variable name, the 'description' field should be set to the value.\n</details>\n\n`
   }
+  await github.updatePullRequestComment(comment_id, comment)
+
   comment += '- [ ] Starting Cloud Run Service\n'
+  const configuredEnvVars = await github.getConfiguredEnvVars(envVars)
+  if (configuredEnvVars.length > 0) {
+    comment += `<details><summary>**Configured** environment variables</summary>\n<ul>\n`
+
+    comment += `\nKEY | VALUE\n--- | ---\n`
+    for (const key of configuredEnvVars) {
+      comment += `${key} | ${key}\n`
+    }
+    comment += `\n</details>\n\n`
+  }
   await github.updatePullRequestComment(comment_id, comment)
 
   try {
@@ -67,16 +78,16 @@ async function create(): Promise<void> {
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
     comment = comment.replace(
-      '### ⚠️ Cloud Run Deployment in progress ⚠️',
-      '### ✅ Cloud Run Deployment succesful ✅'
+      '### :construction: Cloud Run Deployment in progress :construction:',
+      '### :white_check_mark: Cloud Run Deployment succesful :white_check_mark:'
     )
 
     await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     comment += `- Deployment failed: ${error.message}.\n`
     comment = comment.replace(
-      '### ⚠️ Cloud Run Deployment in progress ⚠️',
-      '### ❌ Cloud Run Deployment failed ❌'
+      '### :construction: Cloud Run Deployment in progress :construction:',
+      '### :heavy_exclamation_mark: Cloud Run Deployment failed :heavy_exclamation_mark:'
     )
     await github.updatePullRequestComment(comment_id, comment)
     throw error
