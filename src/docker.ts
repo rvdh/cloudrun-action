@@ -31,7 +31,7 @@ export async function getEnvVarsFromImage(
     core.debug(JSON.stringify(response.body, null, 4))
     return response.body.ContainerConfig.Env
   } catch (error) {
-    core.debug(JSON.stringify(error.response, null, 4))
+    //core.debug(JSON.stringify(error.response, null, 4))
     core.debug(JSON.stringify(error.request, null, 4))
 
     core.setFailed(error.response.body)
