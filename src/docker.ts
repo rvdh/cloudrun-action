@@ -34,7 +34,7 @@ export async function getEnvVarsFromImage(
       `unix:/var/run/docker.sock:/images/${name}/json`
     ).json()
     core.debug(JSON.stringify(response, null, 4))
-    return response.body.ContainerConfig.Env
+    return response.ContainerConfig.Env
   } catch (error) {
     //core.debug(JSON.stringify(error.response, null, 4))
     core.debug(JSON.stringify(error.request, null, 4))
