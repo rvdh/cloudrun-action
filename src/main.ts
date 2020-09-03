@@ -66,10 +66,17 @@ async function create(): Promise<void> {
     comment += `- URL: ${url}.\n`
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
-
+    comment = comment.replace(
+      '## ⚠️ Cloud Run Deployment in progress ⚠️',
+      '## ✅ Cloud Run Deployment succesful ✅'
+    )
     await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     comment += `- Deployment failed: ${error.message}.\n`
+    comment = comment.replace(
+      '## ⚠️ Cloud Run Deployment in progress ⚠️',
+      '## ❌ Cloud Run Deployment failed ❌'
+    )
     await github.updatePullRequestComment(comment_id, comment)
     throw error
   }
