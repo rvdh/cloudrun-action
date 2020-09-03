@@ -22,12 +22,16 @@ export async function getEnvVarsFromImage(
 
   try {
     core.debug(`Sending pull image command for ${name}`)
-    await got.post(`unix:/var/run/docker.sock:/images/create?fromSrc=${name}`, {
-      headers: {'X-Registry-Auth': authData}
-    })
+    let response = await got.post(
+      `unix:/var/run/docker.sock:/images/create?fromSrc=${name}`,
+      {
+        headers: {'X-Registry-Auth': authData}
+      }
+    )
+    core.debug(JSON.stringify(response.body, null, 4))
 
     // inspect the image
-    const response = await got(`unix:/var/run/docker.sock:/images/${name}/json`)
+    response = await got(`unix:/var/run/docker.sock:/images/${name}/json`)
     core.debug(JSON.stringify(response.body, null, 4))
     return response.body.ContainerConfig.Env
   } catch (error) {
