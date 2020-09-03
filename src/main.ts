@@ -54,11 +54,10 @@ async function create(): Promise<void> {
 
   const configuredEnvVars = await github.getConfiguredEnvVars(envVars)
   if (configuredEnvVars.length > 0) {
-    comment += `<details><summary>**Configured** environment variables</summary>\n<ul>\n`
+    comment += `<details><summary>Configured environment variables</summary>\n<ul>\n`
 
     comment += `\nKEY | VALUE\n--- | ---\n`
     for (const key of configuredEnvVars) {
-      core.debug(JSON.stringify(key, null, 4))
       comment += `${key.name} | ${key.value}\n`
     }
     comment += `\n</details>\n\n`
