@@ -47,7 +47,6 @@ async function create(): Promise<void> {
     for (let i = 0; i < envVars?.length; i++) {
       comment += `${envVars[i].replace('=', ' | ')}\n`
     }
-    comment += '```\n'
 
     comment += `\nConfigure environment variables by commenting '@${await github.getUsername()} set KEY=VALUE'\n</details>\n\n`
     await github.updatePullRequestComment(comment_id, comment)
