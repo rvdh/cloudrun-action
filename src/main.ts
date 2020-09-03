@@ -35,7 +35,7 @@ async function create(): Promise<void> {
 
   comment += `🤖  Cloud Run Deployment: Docker image found, configurable environment variables:\n`
   const envVars = await docker.getEnvVarsFromImage(image)
-  comment += `~~~\n${envVars}\n~~~\n`
+  comment += `~~~\n${envVars?.join('\n')}\n~~~\n`
   github.updatePullRequestComment(comment_id, comment)
 
   try {
