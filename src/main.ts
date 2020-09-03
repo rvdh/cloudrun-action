@@ -18,7 +18,7 @@ async function create(): Promise<void> {
   core.info(`Deploying docker image ${image}...`)
 
   // add github comment
-  let comment = `## ⚠️ Cloud Run Deployment in progress ⚠️\n`
+  let comment = `### ⚠️ Cloud Run Deployment in progress ⚠️\n`
   const comment_id = await github.addPullRequestComment(comment)
 
   // update comment (checking for image)
@@ -66,19 +66,17 @@ async function create(): Promise<void> {
     comment += `- URL: ${url}.\n`
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
-    core.debug(`comment = ${comment}`)
     comment = comment.replace(
-      '## ⚠️ Cloud Run Deployment in progress ⚠️',
-      '## ✅ Cloud Run Deployment succesful ✅'
+      '### ⚠️ Cloud Run Deployment in progress ⚠️',
+      '### ✅ Cloud Run Deployment succesful ✅'
     )
-    core.debug(`comment = ${comment}`)
 
     await github.updatePullRequestComment(comment_id, comment)
   } catch (error) {
     comment += `- Deployment failed: ${error.message}.\n`
     comment = comment.replace(
-      '## ⚠️ Cloud Run Deployment in progress ⚠️',
-      '## ❌ Cloud Run Deployment failed ❌'
+      '### ⚠️ Cloud Run Deployment in progress ⚠️',
+      '### ❌ Cloud Run Deployment failed ❌'
     )
     await github.updatePullRequestComment(comment_id, comment)
     throw error
