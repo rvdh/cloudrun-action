@@ -28,13 +28,12 @@ export async function getEnvVarsFromImage(
         headers: {'X-Registry-Auth': authData}
       }
     )
-    core.debug(JSON.stringify(response.request, null, 4))
-
-    core.debug(JSON.stringify(response.body, null, 4))
 
     // inspect the image
-    response = await got(`unix:/var/run/docker.sock:/images/${name}/json`)
-    core.debug(JSON.stringify(response.body, null, 4))
+    response = await got(
+      `unix:/var/run/docker.sock:/images/${name}/json`
+    ).json()
+    core.debug(JSON.stringify(response, null, 4))
     return response.body.ContainerConfig.Env
   } catch (error) {
     //core.debug(JSON.stringify(error.response, null, 4))
