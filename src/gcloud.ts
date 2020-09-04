@@ -56,6 +56,8 @@ function cloudRunCreateService(
     value: string
   }[]
 ): {} {
+  core.debug(JSON.stringify(envVars, null, 4))
+
   return {
     apiVersion: 'serving.knative.dev/v1',
     kind: 'Service',
@@ -75,7 +77,7 @@ function cloudRunCreateService(
           containers: [
             {
               image,
-              env: envVars
+              env: getCloudRunEnvironmentVariables()
             }
           ]
         }
@@ -246,7 +248,7 @@ export async function createOrUpdateCloudRunService(
         }
       )
       core.debug(`Updating service ${name}.`)
-      await run.namespaces.services.replaceService(
+      const response = await run.namespaces.services.replaceService(
         {
           name: `namespaces/${project}/services/${name}`,
           requestBody: cloudRunCreateService(
@@ -262,6 +264,8 @@ export async function createOrUpdateCloudRunService(
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
       )
+      core.debug(JSON.stringify(response, null, 4))
+
       core.debug(`Service ${name} updated`)
     } catch (error) {
       core.debug(JSON.stringify(error, null, 4))
