@@ -77,7 +77,7 @@ function cloudRunCreateService(
           containers: [
             {
               image,
-              env: getCloudRunEnvironmentVariables()
+              env: envVars
             }
           ]
         }
