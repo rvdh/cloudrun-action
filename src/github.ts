@@ -89,6 +89,7 @@ export async function getConfiguredEnvVars(
     for (const key of issueLabels) {
       core.debug(`issue label: ${key.name}`)
       if (key.name === trigger_label) continue
+      if (key.name === 'PORT') continue // PORT is forbidden
 
       if (supportedEnvVarNames.includes(key.name)) {
         let found = false
