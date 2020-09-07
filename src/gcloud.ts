@@ -235,7 +235,7 @@ export async function createOrUpdateCloudRunService(
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
-    const serviceName = name.replace('_', '-')
+    const serviceName = name.replace(/_/g, '-')
 
     core.debug(
       `Checking if service ${serviceName} exists (name: namespaces/${project}/services/${serviceName})..`
@@ -318,7 +318,7 @@ export async function deleteCloudRunService(
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
-    const serviceName = name.replace('_', '-')
+    const serviceName = name.replace(/_/g, '-')
     await setGoogleApplicationCredentials(serviceAccountKey)
     // Obtain user credentials to use for the request
     const auth = new google.auth.GoogleAuth({
