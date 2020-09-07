@@ -124,9 +124,9 @@ async function destroy(): Promise<void> {
 async function main(): Promise<void> {
   try {
     if (core.getInput('delete_service') === 'false') {
-      create()
+      await create()
     } else {
-      destroy()
+      await destroy()
     }
   } catch (error) {
     core.setFailed(error.message)
