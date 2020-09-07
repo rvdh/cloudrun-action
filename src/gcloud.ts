@@ -271,23 +271,28 @@ export async function createOrUpdateCloudRunService(
       core.debug(JSON.stringify(error, null, 4))
       if (error.code === 404) {
         core.debug(`Creating service ${name}`)
-        await run.namespaces.services.create(
-          {
-            parent: `namespaces/${project}`,
-            requestBody: cloudRunCreateService(
-              name,
-              project,
-              image,
-              serviceAccountName,
-              vpcConnectorName,
-              envVars
-            )
-          },
-          {
-            rootUrl: `https://${runRegion}-run.googleapis.com`
-          }
-        )
-        core.debug(`Service ${name} created`)
+        try {
+          await run.namespaces.services.create(
+            {
+              parent: `namespaces/${project}`,
+              requestBody: cloudRunCreateService(
+                name,
+                project,
+                image,
+                serviceAccountName,
+                vpcConnectorName,
+                envVars
+              )
+            },
+            {
+              rootUrl: `https://${runRegion}-run.googleapis.com`
+            }
+          )
+          core.debug(`Service ${name} created`)
+        } catch (crError) {
+          core.debug(JSON.stringify(crError.request, null, 4))
+          core.debug(JSON.stringify(crError.response, null, 4))
+        }
       }
     }
 
