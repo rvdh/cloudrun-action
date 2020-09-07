@@ -235,24 +235,26 @@ export async function createOrUpdateCloudRunService(
     google.options({auth: authClient})
     const project = await auth.getProjectId()
 
+    const serviceName = name.replace('_', '-')
+
     core.debug(
-      `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
+      `Checking if service ${serviceName} exists (name: namespaces/${project}/services/${serviceName})..`
     )
     try {
       await run.namespaces.services.get(
         {
-          name: `namespaces/${project}/services/${name}`
+          name: `namespaces/${project}/services/${serviceName}`
         },
         {
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
       )
-      core.debug(`Updating service ${name}.`)
+      core.debug(`Updating service ${serviceName}.`)
       const response = await run.namespaces.services.replaceService(
         {
-          name: `namespaces/${project}/services/${name}`,
+          name: `namespaces/${project}/services/${serviceName}`,
           requestBody: cloudRunCreateService(
-            name,
+            serviceName,
             project,
             image,
             serviceAccountName,
@@ -266,17 +268,17 @@ export async function createOrUpdateCloudRunService(
       )
       core.debug(JSON.stringify(response, null, 4))
 
-      core.debug(`Service ${name} updated`)
+      core.debug(`Service ${serviceName} updated`)
     } catch (error) {
       core.debug(JSON.stringify(error, null, 4))
       if (error.code === 404) {
-        core.debug(`Creating service ${name}`)
+        core.debug(`Creating service ${serviceName}`)
         try {
           await run.namespaces.services.create(
             {
               parent: `namespaces/${project}`,
               requestBody: cloudRunCreateService(
-                name,
+                serviceName,
                 project,
                 image,
                 serviceAccountName,
@@ -288,7 +290,7 @@ export async function createOrUpdateCloudRunService(
               rootUrl: `https://${runRegion}-run.googleapis.com`
             }
           )
-          core.debug(`Service ${name} created`)
+          core.debug(`Service ${serviceName} created`)
         } catch (crError) {
           core.debug(JSON.stringify(crError.request, null, 4))
           core.debug(JSON.stringify(crError.response, null, 4))
@@ -296,11 +298,11 @@ export async function createOrUpdateCloudRunService(
       }
     }
 
-    await setCloudRunServiceIAMPolicy(name, project, runRegion)
-    const url = await getCloudRunServiceURL(name, project, runRegion)
+    await setCloudRunServiceIAMPolicy(serviceName, project, runRegion)
+    const url = await getCloudRunServiceURL(serviceName, project, runRegion)
     return {
       url,
-      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${name}/logs?project=${project}`
+      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${serviceName}/logs?project=${project}`
     }
   } catch (error) {
     core.setFailed(error.message)
@@ -316,7 +318,7 @@ export async function deleteCloudRunService(
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
-
+    const serviceName = name.replace('_', '-')
     await setGoogleApplicationCredentials(serviceAccountKey)
     // Obtain user credentials to use for the request
     const auth = new google.auth.GoogleAuth({
@@ -328,21 +330,21 @@ export async function deleteCloudRunService(
     const project = await auth.getProjectId()
 
     core.debug(
-      `Checking if service ${name} exists (name: namespaces/${project}/services/${name})..`
+      `Checking if service ${serviceName} exists (name: namespaces/${project}/services/${serviceName})..`
     )
     try {
       await run.namespaces.services.delete(
         {
-          name: `namespaces/${project}/services/${name}`
+          name: `namespaces/${project}/services/${serviceName}`
         },
         {
           rootUrl: `https://${runRegion}-run.googleapis.com`
         }
       )
-      core.info(`Service ${name} deleted`)
+      core.info(`Service ${serviceName} deleted`)
     } catch (error) {
       if (error.code === 404) {
-        core.info(`Service ${name} does not exist, unable to delete`)
+        core.info(`Service ${serviceName} does not exist, unable to delete`)
         return
       }
       throw error
