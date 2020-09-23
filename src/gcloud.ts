@@ -171,15 +171,15 @@ async function setCloudRunServiceIAMPolicy(
   }
 }
 
-async function getCloudRunServiceURL(
+async function getCloudRunServiceStatus(
   name: string,
   project: string,
   runRegion: string
-): Promise<string> {
+): Promise<{url: string; deploymentDate: Date}> {
   const {google} = require('googleapis')
   const run = google.run('v1')
 
-  // Wait until we get a url
+  // Wait until service is ready
   let attempt = 0
   while (attempt < 100) {
     attempt++
@@ -196,7 +196,10 @@ async function getCloudRunServiceURL(
     if (res.data.status.conditions[0].status !== 'Unknown') {
       if (res.data.status.url) {
         core.setOutput('url', res.data.status.url)
-        return res.data.status.url
+        return {
+          url: res.data.status.url,
+          deploymentDate: res.data.status.conditions[0].lastTransitionTime
+        }
       } else {
         throw new Error(
           `${res.data.status.conditions[0].message}\nView logs for this revision: https://console.cloud.google.com/run/detail/${runRegion}/${name}/logs?project=${project}`
@@ -220,7 +223,7 @@ export async function createOrUpdateCloudRunService(
     name: string
     value: string
   }[]
-): Promise<{url: string; logsUrl: string}> {
+): Promise<{url: string; logsUrl: string; deploymentDate: Date}> {
   try {
     const {google} = require('googleapis')
     const run = google.run('v1')
@@ -299,10 +302,15 @@ export async function createOrUpdateCloudRunService(
     }
 
     await setCloudRunServiceIAMPolicy(serviceName, project, runRegion)
-    const url = await getCloudRunServiceURL(serviceName, project, runRegion)
+    const {url, deploymentDate} = await getCloudRunServiceStatus(
+      serviceName,
+      project,
+      runRegion
+    )
     return {
       url,
-      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${serviceName}/logs?project=${project}`
+      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${serviceName}/logs?project=${project}`,
+      deploymentDate
     }
   } catch (error) {
     core.setFailed(error.message)

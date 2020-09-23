@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {getCloudRunEnvironmentVariables} from './gcloud'
 
+const prDeployCommentMarker = '<!-- cloudrun-action-marker -->\n\n'
 export async function addPullRequestComment(comment: string): Promise<number> {
   const githubToken = core.getInput('github_token')
 
@@ -11,14 +12,44 @@ export async function addPullRequestComment(comment: string): Promise<number> {
     })
 
     if (github.context.payload.pull_request) {
-      const {data: issueComment} = await octokit.issues.createComment({
+      // find if we previously commented in this PR before
+      const prCommentId = await getCloudRunDeployComment()
+      if (prCommentId > 0) {
+        return await updatePullRequestComment(prCommentId, comment)
+      } else {
+        const {data: issueComment} = await octokit.issues.createComment({
+          owner: github.context.repo.owner,
+          repo: github.context.repo.repo,
+          issue_number: github.context.issue.number,
+          body: prDeployCommentMarker + comment
+        })
+        return issueComment.id
+      }
+    }
+  }
+  return -1
+}
+
+async function getCloudRunDeployComment(): Promise<number> {
+  const githubToken = core.getInput('github_token')
+
+  if (githubToken) {
+    const octokit = github.getOctokit(githubToken, {
+      userAgent: 'rvdh/cloudrun-action'
+    })
+
+    if (github.context.payload.pull_request) {
+      // find if we previously commented in this PR before
+
+      const {data: issueComments} = await octokit.issues.listComments({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
-        issue_number: github.context.issue.number,
-        body: comment
+        issue_number: github.context.issue.number
       })
 
-      return issueComment.id
+      for (const comment of issueComments) {
+        if (comment.body.includes(prDeployCommentMarker)) return comment.id
+      }
     }
   }
   return -1
@@ -50,7 +81,7 @@ export async function updatePullRequestComment(
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         comment_id,
-        body: comment
+        body: prDeployCommentMarker + comment
       })
 
       return issueComment.id

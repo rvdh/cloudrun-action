@@ -66,7 +66,11 @@ async function create(): Promise<void> {
   await github.updatePullRequestComment(comment_id, comment)
 
   try {
-    const {url, logsUrl} = await gcloud.createOrUpdateCloudRunService(
+    const {
+      url,
+      logsUrl,
+      deploymentDate
+    } = await gcloud.createOrUpdateCloudRunService(
       name,
       runRegion,
       image,
@@ -75,6 +79,7 @@ async function create(): Promise<void> {
       vpcConnectorName,
       configuredEnvVars
     )
+    comment += `- Deployment date: ${deploymentDate}.\n`
     comment += `- URL: ${url}.\n`
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
