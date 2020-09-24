@@ -29,7 +29,7 @@
     "@actions/github": "^4.0.0",
     "axios": "^0.20.0",
     "google-auth-library": "^6.1.0",
-    "googleapis": "^59.0.0",
+    "googleapis": "^60.0.1",
     "got": "^11.7.0",
     "unique-filename": "^1.1.1"
   },
