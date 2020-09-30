@@ -85,7 +85,7 @@ async function create(): Promise<void> {
     comment = comment.replace('- [ ]', '- [x]')
     comment = comment.replace(
       '### :construction: Cloud Run Deployment in progress :construction:',
-      '### :white_check_mark: Cloud Run Deployment succesful :white_check_mark:'
+      '### :white_check_mark: Cloud Run Deployment successful :white_check_mark:'
     )
 
     await github.updatePullRequestComment(comment_id, comment)
