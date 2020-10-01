@@ -28,7 +28,7 @@ async function create(): Promise<void> {
   await github.updatePullRequestComment(comment_id, comment)
 
   if (!(await gcloud.waitForDockerImage(image, serviceAccountKey))) {
-    comment += `Docker image not found, stopping.\n`
+    comment += `\n:exclamation: Timed out waiting for docker image, cannot continue with deployment.\n`
     await github.updatePullRequestComment(comment_id, comment)
     core.setFailed('Docker image not found, stopping.')
     return
