@@ -80,7 +80,7 @@ async function create(): Promise<void> {
       configuredEnvVars
     )
     comment += `- Deployment date: ${deploymentDate}.\n`
-    comment += `- URL: ${url}.\n`
+    comment += `- URL: ${url}\n`
     comment += `- Logs: ${logsUrl}\n`
     comment = comment.replace('- [ ]', '- [x]')
     comment = comment.replace(
