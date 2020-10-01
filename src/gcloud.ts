@@ -309,7 +309,7 @@ export async function createOrUpdateCloudRunService(
     )
     return {
       url,
-      logsUrl: `https://console.cloud.google.com/run/detail/${runRegion}/${serviceName}/logs?project=${project}`,
+      logsUrl: `https://console.cloud.google.com/logs/viewer?advancedFilter=resource.type%20%3D%20%22cloud_run_revision%22%0Aresource.labels.service_name%20%3D%20%22${serviceName}%22%0Aresource.labels.location%20%3D%20%22${runRegion}%22%0A%20severity%3E%3DDEFAULT&project=${project}`,
       deploymentDate
     }
   } catch (error) {
