@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+const stringify = require('json-stringify-safe')
 
 export async function getEnvVarsFromImage(name: string): Promise<string[]> {
   const serviceAccountKey: string = core.getInput('service_account_key', {
@@ -23,18 +24,25 @@ export async function getEnvVarsFromImage(name: string): Promise<string[]> {
     let response = await got.post(
       `unix:/var/run/docker.sock:/images/create?fromImage=${name}`,
       {
-        headers: {'X-Registry-Auth': authData}
+        headers: {'X-Registry-Auth': authData},
+        responseType: 'text',
+        resolveBodyOnly: true
       }
     )
+
+    core.debug(`pull image response: ${stringify(response, null, 4)}`)
 
     // inspect the image
     response = await got(
       `unix:/var/run/docker.sock:/images/${name}/json`
     ).json()
-    return response.ContainerConfig.Env
+    core.debug(`inspect image response: ${stringify(response, null, 4)}`)
+
+    return response.Config.Env
   } catch (error) {
-    if (error.request) core.debug(JSON.stringify(error.request, null, 4))
-    if (error.response) core.debug(JSON.stringify(error.response, null, 4))
+    core.debug(stringify(error, null, 4))
+    if (error.request) core.debug(stringify(error.request, null, 4))
+    if (error.response) core.debug(stringify(error.response, null, 4))
 
     core.setFailed(error.response.body)
   }
